@@ -20,17 +20,22 @@ create table if not exists public.profiles (
   created_at  timestamptz not null default now()
 );
 
+-- Email yang otomatis menjadi admin saat mendaftar di aplikasi
+create table if not exists public.admin_emails (email text primary key);
+alter table public.admin_emails enable row level security;
+
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles (id, email, full_name, whatsapp, gender, quiz)
+  insert into public.profiles (id, email, full_name, whatsapp, gender, quiz, role)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)),
     new.raw_user_meta_data->>'whatsapp',
     nullif(new.raw_user_meta_data->>'gender',''),
-    case when new.raw_user_meta_data ? 'quiz' then new.raw_user_meta_data->'quiz' else null end
+    case when new.raw_user_meta_data ? 'quiz' then new.raw_user_meta_data->'quiz' else null end,
+    case when exists (select 1 from public.admin_emails a where lower(a.email) = lower(new.email)) then 'admin' else 'member' end
   )
   on conflict (id) do nothing;
   return new;
@@ -320,6 +325,17 @@ drop policy if exists "public-assets: baca" on storage.objects;
 create policy "public-assets: baca" on storage.objects for select using (bucket_id = 'public-assets');
 
 -- ---------------------------------------------------------------------
--- 10. JADIKAN AKUN ANDA ADMIN (ganti email, jalankan SETELAH daftar di app)
+-- 10. HAK AKSES API (keamanan tetap dijaga RLS di atas)
 -- ---------------------------------------------------------------------
--- update public.profiles set role = 'admin' where email = 'email-anda@gmail.com';
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to anon, authenticated;
+grant usage, select on all sequences in schema public to anon, authenticated;
+revoke all on public.admin_emails from anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- 11. ADMIN
+--   a) Email di admin_emails otomatis jadi admin saat mendaftar di aplikasi:
+--        insert into public.admin_emails values ('email-anda@gmail.com') on conflict do nothing;
+--   b) Akun yang sudah terdaftar:
+--        update public.profiles set role = 'admin' where email = 'email-anda@gmail.com';
+-- ---------------------------------------------------------------------
