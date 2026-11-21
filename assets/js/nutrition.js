@@ -47,19 +47,36 @@ window.Nutrition = (function () {
   }
 
   /* ---------- slot makan ---------- */
-  function slots(fasting) {
-    if (fasting) return [
-      { id: "sahur", t: "Sahur (akhirkan menjelang Subuh)", share: 0.4, parts: ["karbo", "protein", "sayur", "lemak"] },
-      { id: "berbuka", t: "Berbuka (sebelum sholat Maghrib)", share: 0.07, parts: ["buah"], fixed: { buah: "kurma" } },
-      { id: "malam", t: "Makan malam (setelah Maghrib)", share: 0.43, parts: ["karbo", "protein", "sayur", "lemak"] },
-      { id: "selingan", t: "Selingan (setelah Tarawih)", share: 0.1, parts: ["buah"] }
-    ];
-    return [
-      { id: "sarapan", t: "Sarapan (Ba'da Subuh)", share: 0.25, parts: ["karbo", "protein", "sayur"] },
-      { id: "siang", t: "Makan siang (Ba'da Dzuhur)", share: 0.35, parts: ["karbo", "protein", "sayur", "lemak"] },
-      { id: "malam", t: "Makan malam (Ba'da Maghrib)", share: 0.3, parts: ["karbo", "protein", "sayur", "lemak"] },
-      { id: "selingan", t: "Selingan sore", share: 0.1, parts: ["buah", "lemak"] }
-    ];
+  const MAIN = ["karbo", "protein", "sayur", "lemak"];
+  const MEAL_COUNTS = [2, 3, 4, 5, 6];
+  function slots(fasting, meals) {
+    meals = MEAL_COUNTS.includes(+meals) ? +meals : 4;
+    if (fasting) {
+      if (meals <= 3) return [
+        { id: "sahur", t: "Sahur (akhirkan menjelang Subuh)", share: 0.45, parts: MAIN },
+        { id: "berbuka", t: "Berbuka (sebelum sholat Maghrib)", share: 0.07, parts: ["buah"], fixed: { buah: "kurma" } },
+        { id: "malam", t: "Makan malam (setelah Maghrib)", share: 0.48, parts: MAIN }
+      ];
+      return [
+        { id: "sahur", t: "Sahur (akhirkan menjelang Subuh)", share: 0.4, parts: MAIN },
+        { id: "berbuka", t: "Berbuka (sebelum sholat Maghrib)", share: 0.07, parts: ["buah"], fixed: { buah: "kurma" } },
+        { id: "malam", t: "Makan malam (setelah Maghrib)", share: 0.43, parts: MAIN },
+        { id: "selingan", t: "Selingan (setelah Tarawih)", share: 0.1, parts: ["buah"] }
+      ];
+    }
+    const S = {
+      sarapan: (sh) => ({ id: "sarapan", t: "Sarapan (Ba'da Subuh)", share: sh, parts: ["karbo", "protein", "sayur"] }),
+      siang: (sh) => ({ id: "siang", t: "Makan siang (Ba'da Dzuhur)", share: sh, parts: MAIN }),
+      malam: (sh) => ({ id: "malam", t: "Makan malam (Ba'da Maghrib)", share: sh, parts: MAIN }),
+      pagi: (sh) => ({ id: "selingan_pagi", t: "Selingan pagi (waktu Dhuha)", share: sh, parts: ["buah"] }),
+      sore: (sh) => ({ id: "selingan", t: "Selingan sore (Ba'da Ashar)", share: sh, parts: ["buah", "lemak"] }),
+      isya: (sh) => ({ id: "selingan_malam", t: "Selingan malam (Ba'da Isya)", share: sh, parts: ["buah", "lemak"] })
+    };
+    if (meals === 2) return [Object.assign(S.siang(0.5), { t: "Makan pertama (Ba'da Dzuhur)" }), Object.assign(S.malam(0.5), { t: "Makan kedua (Ba'da Maghrib)" })];
+    if (meals === 3) return [S.sarapan(0.3), S.siang(0.4), S.malam(0.3)];
+    if (meals === 5) return [S.sarapan(0.22), S.pagi(0.08), S.siang(0.32), S.sore(0.1), S.malam(0.28)];
+    if (meals === 6) return [S.sarapan(0.2), S.pagi(0.08), S.siang(0.28), S.sore(0.1), S.malam(0.26), S.isya(0.08)];
+    return [S.sarapan(0.25), S.siang(0.35), S.malam(0.3), S.sore(0.1)];
   }
   const LIMITS = { karbo: [0, 450], protein: [40, 300], sayur: [80, 300], buah: [80, 300], lemak: [0, 60] };
   const limitFor = (f, part) => {
@@ -138,30 +155,30 @@ window.Nutrition = (function () {
     lemakSnack: ["almond", "kacang_tanah", "alpukat"]
   };
   const at = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
-  function autoChoices(day, fasting) {
-    const sl = slots(fasting), used = new Set();
+  function autoChoices(day, fasting, meals) {
+    const sl = slots(fasting, meals), used = new Set();
     return sl.map((s, i) => {
       const c = {};
       if (s.parts.includes("protein")) {
-        const list = i === 0 && !fasting ? ROT.protPagi : ROT.protUtama;
+        const list = s.id === "sarapan" ? ROT.protPagi : ROT.protUtama;
         let k = day * 2 + i, p = at(list, k); let guard = 0;
         while (used.has(p) && guard++ < 10) p = at(list, ++k);
         used.add(p); c.protein = p;
       }
-      if (s.parts.includes("karbo")) c.karbo = i === 0 && !fasting ? at(ROT.karboPagi, day) : at(ROT.karboUtama, day + i);
+      if (s.parts.includes("karbo")) c.karbo = s.id === "sarapan" ? at(ROT.karboPagi, day) : at(ROT.karboUtama, day + i);
       if (s.parts.includes("sayur")) c.sayur = at(ROT.sayur, day * 2 + i);
       if (s.parts.includes("buah")) c.buah = at(ROT.buah, day + i);
-      if (s.parts.includes("lemak")) c.lemak = s.id === "selingan" ? at(ROT.lemakSnack, day) : "minyak";
+      if (s.parts.includes("lemak")) c.lemak = s.id.startsWith("selingan") ? at(ROT.lemakSnack, day + i) : "minyak";
       return c;
     });
   }
-  function plan({ kcal, macro, fasting, choices }) {
+  function plan({ kcal, macro, fasting, choices, meals }) {
     const t = targets(kcal, macro);
-    const sl = slots(fasting);
-    const meals = sl.map((s, i) => buildMeal(s, (choices && choices[i]) || {}, t));
-    return { target: t, meals, total: sum(meals.map((m) => m.total)), fasting: !!fasting };
+    const sl = slots(fasting, meals);
+    const list = sl.map((s, i) => buildMeal(s, (choices && choices[i]) || {}, t));
+    return { target: t, meals: list, total: sum(list.map((m) => m.total)), fasting: !!fasting };
   }
-  function autoPlan({ kcal, macro, day = 0, fasting = false }) { return plan({ kcal, macro, fasting, choices: autoChoices(day, fasting) }); }
+  function autoPlan({ kcal, macro, day = 0, fasting = false, meals = 4 }) { return plan({ kcal, macro, fasting, meals, choices: autoChoices(day, fasting, meals) }); }
 
-  return { load, food, byCat, PRESETS, defaultMacro, targets, warnings, slots, plan, autoPlan, autoChoices, fmtQty, get db() { return DB; } };
+  return { load, food, byCat, MEAL_COUNTS, PRESETS, defaultMacro, targets, warnings, slots, plan, autoPlan, autoChoices, fmtQty, get db() { return DB; } };
 })();

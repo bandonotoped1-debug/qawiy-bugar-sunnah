@@ -18,7 +18,7 @@ function send(res, code, body) {
 }
 async function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
-  const chunks = []; for await (const c of req) chunks.push(c);
+  const chunks = []; for await (const c of req) chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(String(c)));
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"); } catch (e) { return {}; }
 }
 async function sbFetch(path, opts, token) {
@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
   const system = `Kamu "Asisten QOWIY", asisten chat aplikasi QOWIY — Aplikasi Kebugaran Muslim (program kebugaran 12–16 pekan sesuai Al-Qur'an & Sunnah).
 Gaya: bahasa Indonesia yang santun dan hangat, boleh salam Islami, jawaban SINGKAT (maks. ±120 kata), poin-poin bila perlu.
 Yang kamu ketahui tentang aplikasi:
-- Alur: tes kebugaran 11 pertanyaan (gratis) → hasil (IMT, kalori, rencana makan hari 1) → pilih paket → bayar QRIS/transfer → konfirmasi via WhatsApp → admin mengaktifkan akses.
+- Alur: tes kebugaran 12 pertanyaan (gratis) → hasil (IMT, kalori, rencana makan hari 1) → pilih paket → bayar QRIS/transfer → konfirmasi via WhatsApp → admin mengaktifkan akses.
 - Fitur member: kelas video (jalur Turun Berat / Bugar & Kuat, Ramadan Mode, pecah plateau), video rutinitas mengikuti waktu sholat (ikhwan & akhwat terpisah), motivasi trainer, checklist sunnah harian, rencana makan (atur % protein/karbo/serat, lemak = sisa; menu otomatis, rekomendasi AI, susun sendiri), kalkulator kalori/BMR/IMT/lemak tubuh (gratis), artikel berdalil & bersumber ilmiah, koneksi Bluetooth ke jam pintar (detak jantung) dan timbangan (Chrome Android/PC; iPhone pakai browser Bluefy).
 - Paket saat ini:
 ${plans || "(lihat halaman Langganan)"}

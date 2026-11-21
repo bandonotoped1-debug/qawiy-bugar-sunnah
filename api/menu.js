@@ -33,7 +33,7 @@ function send(res, code, body) {
 
 async function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
-  const chunks = []; for await (const c of req) chunks.push(c);
+  const chunks = []; for await (const c of req) chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(String(c)));
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"); } catch (e) { return {}; }
 }
 
@@ -90,9 +90,14 @@ module.exports = async (req, res) => {
   const list = foods().filter((f) => !avoid.includes(f.id));
   const cats = {};
   list.forEach((f) => { (cats[f.cat] = cats[f.cat] || []).push(`${f.id} (${f.name})`); });
-  const slots = fasting
-    ? ["sahur: karbo, protein, sayur, lemak", "berbuka: buah (wajib kurma)", "malam: karbo, protein, sayur, lemak", "selingan: buah"]
-    : ["sarapan: karbo, protein, sayur", "siang: karbo, protein, sayur, lemak", "malam: karbo, protein, sayur, lemak", "selingan: buah, lemak"];
+  // slot makan dikirim aplikasi (sesuai pilihan 2–6 kali makan); divalidasi di sini
+  const PARTS = ["karbo", "protein", "sayur", "lemak", "buah"];
+  const IDS = /^(sarapan|siang|malam|selingan|selingan_pagi|selingan_malam|sahur|berbuka)$/;
+  let slotList = Array.isArray(body.slots) ? body.slots.slice(0, 6).filter((x) => x && IDS.test(x.id) && Array.isArray(x.parts)).map((x) => ({ id: x.id, parts: x.parts.filter((p) => PARTS.includes(p)), kurma: !!(x.fixed && x.fixed.buah === "kurma") })) : [];
+  if (!slotList.length) slotList = fasting
+    ? [{ id: "sahur", parts: ["karbo", "protein", "sayur", "lemak"] }, { id: "berbuka", parts: ["buah"], kurma: true }, { id: "malam", parts: ["karbo", "protein", "sayur", "lemak"] }, { id: "selingan", parts: ["buah"] }]
+    : [{ id: "sarapan", parts: ["karbo", "protein", "sayur"] }, { id: "siang", parts: ["karbo", "protein", "sayur", "lemak"] }, { id: "malam", parts: ["karbo", "protein", "sayur", "lemak"] }, { id: "selingan", parts: ["buah", "lemak"] }];
+  const slots = slotList.map((x) => `${x.id}: ${x.parts.join(", ")}${x.kurma ? " (buah wajib kurma)" : ""}`);
 
   const system = `Kamu ahli gizi Muslim Indonesia. Susun menu SATU HARI yang halal, sederhana, mudah dimasak di rumah Indonesia, dan sesuai adab makan sunnah (tidak berlebihan).
 ATURAN WAJIB:
@@ -103,11 +108,12 @@ ATURAN WAJIB:
 - Nama hidangan singkat dalam bahasa Indonesia (mis. "Nasi merah, pepes ikan nila, tumis bayam").
 - Balas HANYA JSON valid tanpa teks lain.`;
   const user = `Target harian: ${Math.round(t.kcal || 0)} kkal; protein ${Math.round(t.p || 0)} g; karbohidrat ${Math.round(t.k || 0)} g; serat ${Math.round(t.s || 0)} g; lemak ${Math.round(t.l || 0)} g.
-Mode: ${fasting ? "hari puasa" : "hari biasa"}. ${note ? "Catatan pengguna: " + note : ""}
+Mode: ${fasting ? "hari puasa" : "hari biasa"}; makan ${slotList.length} kali sehari. ${note ? "Catatan pengguna: " + note : ""}
 Slot & bagian: ${slots.join(" | ")}
 Daftar bahan per kategori:
 ${Object.entries(cats).map(([c, a]) => `- ${c}: ${a.join(", ")}`).join("\n")}
-Format JSON: {"judul":"...","meals":[{"slot":"${fasting ? "sahur" : "sarapan"}","dish":"...","karbo":"id","protein":"id","sayur":"id","lemak":"id","buah":"id"}, ...],"tips":"satu kalimat"}`;
+Isi SEMUA slot di atas, urut, hanya dengan bagian yang tercantum pada slot itu.
+Format JSON: {"judul":"...","meals":[{"slot":"${slotList[0].id}","dish":"...","karbo":"id","protein":"id","sayur":"id","lemak":"id","buah":"id"}, ...],"tips":"satu kalimat"}`;
 
   let text;
   try { text = await callAI(system, user); }
@@ -119,8 +125,8 @@ Format JSON: {"judul":"...","meals":[{"slot":"${fasting ? "sahur" : "sarapan"}",
 
   // 4) validasi id & aturan 1 protein per hidangan
   const ok = (id, cat) => list.some((f) => f.id === id && f.cat === cat);
-  const meals = out.meals.slice(0, 4).map((m) => {
-    const c = { dish: String(m.dish || "").slice(0, 90) };
+  const meals = out.meals.slice(0, 6).map((m) => {
+    const c = { slot: String(m.slot || ""), dish: String(m.dish || "").slice(0, 90) };
     ["karbo", "protein", "sayur", "lemak", "buah"].forEach((k) => { if (ok(m[k], k)) c[k] = m[k]; });
     return c;
   });

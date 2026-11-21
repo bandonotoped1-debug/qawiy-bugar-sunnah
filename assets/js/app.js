@@ -60,6 +60,8 @@
       ["rumah", "🏠", "Di rumah tanpa alat", ""], ["alat", "🏠", "Di rumah dengan alat sederhana", "Dumbbell, resistance band"], ["gym", "🏢", "Di gym", ""]] },
     { id: "slot", type: "single", title: "Kapan waktu luang paling memungkinkan?", sub: "Jadwal latihanmu akan menempel pada waktu sholat ini.", options: [
       ["subuh", "🌅", "Ba'da Subuh", ""], ["dhuha", "☀️", "Pagi / Dhuha", ""], ["ashar", "🌇", "Ba'da Ashar", ""], ["isya", "🌙", "Ba'da Isya", ""]] },
+    { id: "meals", type: "single", title: "Biasanya kamu makan berapa kali sehari?", sub: "Rencana makan akan dibagi sesuai kebiasaanmu — boleh diubah kapan saja.", options: [
+      ["2", "🍽️", "2 kali", "Makan siang & malam"], ["3", "🍽️", "3 kali", "Sarapan, siang, malam"], ["4", "🍽️", "4 kali", "3 kali makan + 1 selingan"], ["5", "🍽️", "5 kali", "3 kali makan + 2 selingan"], ["6", "🍽️", "6 kali", "Porsi kecil tapi sering"]] },
     { id: "challenges", type: "multi", title: "Apa tantangan terbesarmu?", sub: "Boleh pilih lebih dari satu.", options: [
       ["konsisten", "🔁", "Sulit konsisten", ""], ["makan", "🍽️", "Makan berlebihan / sering ngemil", ""], ["tidur", "😴", "Sering tidur larut", ""],
       ["bingung", "🧭", "Tidak tahu harus mulai dari mana", ""], ["waktu", "⏳", "Waktu sempit", ""]] },
@@ -124,7 +126,7 @@
             <a class="btn acc" href="#/kuis">${q.done ? "Ulangi tes kebugaran" : "Mulai tes kebugaran — 2 menit"} →</a>
             ${q.done ? '<a class="btn ghost" href="#/hasil">Lihat hasil tesku</a>' : '<a class="btn ghost" href="#/langganan">Lihat paket</a>'}
           </div>
-          <p class="hint mt16">11 pertanyaan singkat · gratis · langsung dapat rencana makan hari pertama</p>
+          <p class="hint mt16">12 pertanyaan singkat · gratis · langsung dapat rencana makan hari pertama</p>
         </div>
         <figure class="emblem">
           <img src="assets/img/logo-full.webp" alt="QOWIY — Aplikasi Kebugaran Muslim" width="168" height="168">
@@ -167,7 +169,7 @@
       <section class="wrap">
         <div class="cta-band">
           <img src="assets/img/logo-mark.png" alt="" width="84" height="84">
-          <div><h2>Mulai dari tes 2 menit.</h2><p>Jawab 11 pertanyaan, dapatkan jalur program, target kalori, dan rencana makan hari pertama — gratis.</p></div>
+          <div><h2>Mulai dari tes 2 menit.</h2><p>Jawab 12 pertanyaan, dapatkan jalur program, target kalori, dan rencana makan hari pertama — gratis.</p></div>
           <a class="btn acc" href="#/kuis">Mulai sekarang →</a>
         </div>
       </section>`;
@@ -291,7 +293,7 @@
         <p class="muted-d">Semua video kelas, rutinitas harian, dan checklist sunnah sudah disiapkan untuk ${trackTxt}.</p>
         <a class="btn acc mt16" href="#/langganan">Pilih paket langganan →</a>
       </div></section>`;
-    if (!r.medical) N.load().then(() => { const el = $("#resPlan"); if (!el) return; const P = loadPrefs(r, q); el.innerHTML = mealCardsHTML(N.autoPlan({ kcal: P.kcal, macro: P, day: 0 })); });
+    if (!r.medical) N.load().then(() => { const el = $("#resPlan"); if (!el) return; const P = loadPrefs(r, q); el.innerHTML = mealCardsHTML(N.autoPlan({ kcal: P.kcal, macro: P, day: 0, meals: P.meals })); });
   }
 
   /* ------------------------------------------------------------------ */
@@ -831,7 +833,7 @@
     let saved = null;
     try { saved = (state.me && state.me.nutrition) || JSON.parse(localStorage.getItem(MKEY) || "null"); } catch (e) {}
     const base = N.defaultMacro(q.goal === "kuat" ? "kuat" : r.track === "turun" ? "turun" : "seimbang");
-    return Object.assign({ kcal: r.target }, base, saved || {});
+    return Object.assign({ kcal: r.target, meals: +q.meals || 4 }, base, saved || {});
   }
   async function savePrefs(p) {
     localStorage.setItem(MKEY, JSON.stringify(p));
@@ -877,6 +879,8 @@
         <div class="macro-grid">
           <div>
             <label class="field"><span>Target energi harian (kkal)</span><input id="mKcal" type="number" min="1000" max="5000" step="10" value="${Math.round(P.kcal)}"></label>
+            <div class="field"><span>Makan berapa kali sehari?</span><div class="chips" id="mealCount">${N.MEAL_COUNTS.map((n) => `<button type="button" data-meals="${n}" class="${+P.meals === n ? "on" : ""}">${n}×</button>`).join("")}</div></div>
+            <span class="field-lbl">Pola makro</span>
             <div class="chips">${N.PRESETS.map((p) => `<button type="button" data-preset="${p.id}" class="${P.preset === p.id ? "on" : ""}" title="${esc(p.desc)}">${esc(p.name)}</button>`).join("")}</div>
             ${[["p", "Protein", 5, 60], ["k", "Karbohidrat", 5, 75], ["s", "Serat", 0, 20]].map(([k, t, lo, hi]) => `<div class="slider"><div class="row"><b>${t}</b><span class="spacer"></span><input class="pct" type="number" data-k="${k}" min="${lo}" max="${hi}" value="${P[k]}"><span>%</span></div><input type="range" data-k="${k}" min="${lo}" max="${hi}" step="1" value="${P[k]}"></div>`).join("")}
             <div class="slider"><div class="row"><b>Lemak</b><span class="spacer"></span><b id="fatPct"></b><span class="muted" style="font-size:12.5px">(sisa otomatis)</span></div></div>
@@ -895,7 +899,7 @@
       <p class="muted-d" style="font-size:12.5px">Rujukan nilai gizi: USDA FoodData Central (SR Legacy) dan Tabel Komposisi Pangan Indonesia 2017 (Kemenkes RI). Rentang makro anjuran: Institute of Medicine (2005). Rencana ini edukasi umum, bukan diet terapi.</p>
     </section>`;
 
-    const cur = () => ({ kcal: +$("#mKcal").value || P.kcal, p: +$('input.pct[data-k="p"]').value, k: +$('input.pct[data-k="k"]').value, s: +$('input.pct[data-k="s"]').value, preset: P.preset });
+    const cur = () => ({ kcal: +$("#mKcal").value || P.kcal, p: +$('input.pct[data-k="p"]').value, k: +$('input.pct[data-k="k"]').value, s: +$('input.pct[data-k="s"]').value, preset: P.preset, meals: +P.meals || 4 });
     let buildChoices = null, aiResult = null;
     const drawMacro = () => {
       const m = cur(), t = N.targets(m.kcal, m);
@@ -908,6 +912,7 @@
     const sync = (k, v) => { $$(`[data-k="${k}"]`).forEach((x) => (x.value = v)); P.preset = "custom"; $$("[data-preset]").forEach((b) => b.classList.remove("on")); drawMacro(); };
     $$("#macroBox input[type=range], #macroBox input.pct").forEach((inp2) => (inp2.oninput = () => sync(inp2.dataset.k, inp2.value)));
     $("#mKcal").oninput = drawMacro;
+    $$("[data-meals]").forEach((b) => (b.onclick = () => { P.meals = +b.dataset.meals; $$("[data-meals]").forEach((x) => x.classList.toggle("on", x === b)); buildChoices = null; aiResult = null; drawMacro(); }));
     $$("[data-preset]").forEach((b) => (b.onclick = () => { const p = N.PRESETS.find((x) => x.id === b.dataset.preset); ["p", "k", "s"].forEach((k) => $$(`[data-k="${k}"]`).forEach((x) => (x.value = p[k]))); P.preset = p.id; $$("[data-preset]").forEach((x) => x.classList.toggle("on", x === b)); drawMacro(); }));
     $("#mSave").onclick = async () => { const m = cur(); Object.assign(P, m); await savePrefs(m); toast("Pengaturan makro tersimpan"); };
 
@@ -926,10 +931,10 @@
             const btn = $("#aiGo"); btn.disabled = true; btn.textContent = "AI sedang menyusun menu…"; $("#aiErr").textContent = "";
             const t = N.targets(m.kcal, m); const fast = $("#aiFast").checked;
             try {
-              const res = await Store.aiMenu({ target: { kcal: t.kcal, p: t.g.p, k: t.g.k, s: t.g.s, l: t.g.l }, fasting: fast, note: $("#aiNote").value, avoid: $$(".ai-box .chip-check input:checked").map((x) => x.value) });
-              const sl = N.slots(fast), auto = N.autoChoices(0, fast);
+              const sl = N.slots(fast, m.meals), auto = N.autoChoices(0, fast, m.meals);
+              const res = await Store.aiMenu({ target: { kcal: t.kcal, p: t.g.p, k: t.g.k, s: t.g.s, l: t.g.l }, fasting: fast, meals: m.meals, slots: sl.map((x) => ({ id: x.id, t: x.t, parts: x.parts, fixed: x.fixed || null })), note: $("#aiNote").value, avoid: $$(".ai-box .chip-check input:checked").map((x) => x.value) });
               const choices = sl.map((s, i) => { const a = res.meals.find((x) => x.slot === s.id) || res.meals[i] || {}; const c = Object.assign({}, auto[i]); s.parts.forEach((part) => { if (a[part]) c[part] = a[part]; }); if (a.dish) c.dish = a.dish; return c; });
-              aiResult = { res, fast, choices }; drawPlan();
+              aiResult = { res, fast, choices, meals: m.meals }; drawPlan();
             } catch (e) {
               $("#aiErr").textContent = e.code === "ai_disabled" ? "Fitur AI belum diaktifkan oleh admin. Sementara itu, gunakan menu otomatis Hari 1–7 atau Susun sendiri." : e.message;
               btn.disabled = false; btn.textContent = "Buat rekomendasi AI";
@@ -937,33 +942,33 @@
           };
           return;
         }
-        const plan = N.plan({ kcal: m.kcal, macro: m, fasting: aiResult.fast, choices: aiResult.choices });
+        const plan = N.plan({ kcal: m.kcal, macro: m, fasting: aiResult.fast, choices: aiResult.choices, meals: aiResult.meals });
         area.innerHTML = `<div class="card ai-head"><div><span class="kicker dark">Rekomendasi AI</span><h3 style="margin:2px 0">${esc(aiResult.res.judul)}</h3>${aiResult.res.tips ? `<p class="muted" style="margin:0">${esc(aiResult.res.tips)}</p>` : ""}</div><div class="row wrap-it"><button class="btn sm ghost" id="aiAgain" type="button">Buat ulang</button><button class="btn sm acc" id="aiSave" type="button">Simpan menu</button></div></div>` + mealCardsHTML(plan);
         $("#aiAgain").onclick = () => { aiResult = null; drawPlan(); };
-        $("#aiSave").onclick = () => savePlanDialog(aiResult.res.judul, { kcal: m.kcal, macro: m, fasting: aiResult.fast, choices: aiResult.choices, source: "ai" });
+        $("#aiSave").onclick = () => savePlanDialog(aiResult.res.judul, { kcal: m.kcal, macro: m, fasting: aiResult.fast, meals: aiResult.meals, choices: aiResult.choices, source: "ai" });
         return;
       }
       if (isBuild) { drawBuilder(area, m); return; }
-      area.innerHTML = mealCardsHTML(N.autoPlan({ kcal: m.kcal, macro: m, day, fasting }));
+      area.innerHTML = mealCardsHTML(N.autoPlan({ kcal: m.kcal, macro: m, day, fasting, meals: m.meals }));
     }
 
     async function drawBuilder(area, m) {
-      const fast = !!(buildChoices && buildChoices.fasting);
-      const sl = N.slots(fast);
-      if (!buildChoices) buildChoices = { fasting: false, choices: N.autoChoices(0, false) };
+      if (!buildChoices) buildChoices = { fasting: false, choices: N.autoChoices(0, false, m.meals) };
+      const fast = !!buildChoices.fasting;
+      const sl = N.slots(fast, m.meals);
       const opt = (cat, sel) => N.byCat(cat).map((f) => `<option value="${f.id}" ${f.id === sel ? "selected" : ""}>${esc(f.name)}</option>`).join("");
-      const plan = N.plan({ kcal: m.kcal, macro: m, fasting: fast, choices: buildChoices.choices });
+      const plan = N.plan({ kcal: m.kcal, macro: m, fasting: fast, meals: m.meals, choices: buildChoices.choices });
       const saved = state.me ? await Store.listPlans().catch(() => []) : [];
       area.innerHTML = `<div class="card builder"><div class="row wrap-it"><div><span class="kicker dark">Susun sendiri</span><h3 style="margin:2px 0">Pilih bahan, porsi dihitung otomatis</h3></div><span class="spacer"></span><label class="check"><input type="checkbox" id="bFast" ${fast ? "checked" : ""}> Hari puasa</label></div>
-        <div class="bgrid">${sl.map((s, i) => `<div class="bslot"><b>${esc(s.t)}</b>${s.parts.filter((p) => !(s.fixed && s.fixed[p])).map((part) => `<label class="field"><span>${PART_LABEL[part]}</span><select data-slot="${i}" data-part="${part}">${part === "lemak" ? `<option value="">— tanpa —</option>` : ""}${opt(part === "lemak" && s.id === "selingan" ? "lemak" : part, buildChoices.choices[i] && buildChoices.choices[i][part])}</select></label>`).join("")}${s.fixed ? `<p class="muted" style="font-size:13px;margin:0">Berbuka dengan kurma (sunnah).</p>` : ""}</div>`).join("")}</div>
+        <div class="bgrid">${sl.map((s, i) => `<div class="bslot"><b>${esc(s.t)}</b>${s.parts.filter((p) => !(s.fixed && s.fixed[p])).map((part) => `<label class="field"><span>${PART_LABEL[part]}</span><select data-slot="${i}" data-part="${part}">${part === "lemak" ? `<option value="">— tanpa —</option>` : ""}${opt(part, buildChoices.choices[i] && buildChoices.choices[i][part])}</select></label>`).join("")}${s.fixed ? `<p class="muted" style="font-size:13px;margin:0">Berbuka dengan kurma (sunnah).</p>` : ""}</div>`).join("")}</div>
         <div class="row wrap-it mt16"><button class="btn sm acc" id="bSave" type="button">Simpan menu ini</button><button class="btn sm ghost" id="bAuto" type="button">Isi otomatis</button></div></div>
         ${mealCardsHTML(plan)}
-        <div class="card mt16"><span class="label muted">Menu tersimpan</span>${saved.length ? `<div class="saved">${saved.map((x) => `<div class="row"><div style="flex:1"><b>${esc(x.name)}</b><div class="muted" style="font-size:12.5px">${fmtDate(x.created_at)} · ${x.plan && x.plan.source === "ai" ? "dari AI" : "susun sendiri"}</div></div><button class="btn sm light" data-load="${x.id}" type="button">Buka</button><button class="btn sm danger" data-del="${x.id}" type="button">Hapus</button></div>`).join("")}</div>` : `<p class="muted">Belum ada menu tersimpan.</p>`}</div>`;
+        <div class="card mt16"><span class="label muted">Menu tersimpan</span>${saved.length ? `<div class="saved">${saved.map((x) => `<div class="row"><div style="flex:1"><b>${esc(x.name)}</b><div class="muted" style="font-size:12.5px">${fmtDate(x.created_at)} · ${(x.plan && x.plan.meals) || 4}× makan · ${x.plan && x.plan.source === "ai" ? "dari AI" : "susun sendiri"}</div></div><button class="btn sm light" data-load="${x.id}" type="button">Buka</button><button class="btn sm danger" data-del="${x.id}" type="button">Hapus</button></div>`).join("")}</div>` : `<p class="muted">Belum ada menu tersimpan.</p>`}</div>`;
       $$("[data-slot]", area).forEach((sel) => (sel.onchange = () => { const i = +sel.dataset.slot; buildChoices.choices[i] = Object.assign({}, buildChoices.choices[i], { [sel.dataset.part]: sel.value, dish: undefined }); drawPlan(); }));
-      $("#bFast").onchange = () => { const f = $("#bFast").checked; buildChoices = { fasting: f, choices: N.autoChoices(0, f) }; drawPlan(); };
-      $("#bAuto").onclick = () => { buildChoices = { fasting: fast, choices: N.autoChoices(Math.floor(Math.random() * 7), fast) }; drawPlan(); };
-      $("#bSave").onclick = () => savePlanDialog("Menu saya", { kcal: m.kcal, macro: m, fasting: fast, choices: buildChoices.choices, source: "user" });
-      $$("[data-load]", area).forEach((b) => (b.onclick = () => { const x = saved.find((s) => s.id === b.dataset.load); buildChoices = { fasting: !!x.plan.fasting, choices: x.plan.choices }; ["p", "k", "s"].forEach((k) => $$(`[data-k="${k}"]`).forEach((e) => (e.value = x.plan.macro[k]))); $("#mKcal").value = x.plan.kcal; drawMacro(); toast("Menu dimuat: " + x.name); }));
+      $("#bFast").onchange = () => { const f = $("#bFast").checked; buildChoices = { fasting: f, choices: N.autoChoices(0, f, m.meals) }; drawPlan(); };
+      $("#bAuto").onclick = () => { buildChoices = { fasting: fast, choices: N.autoChoices(Math.floor(Math.random() * 7), fast, m.meals) }; drawPlan(); };
+      $("#bSave").onclick = () => savePlanDialog("Menu saya", { kcal: m.kcal, macro: m, fasting: fast, meals: m.meals, choices: buildChoices.choices, source: "user" });
+      $$("[data-load]", area).forEach((b) => (b.onclick = () => { const x = saved.find((s) => s.id === b.dataset.load); buildChoices = { fasting: !!x.plan.fasting, choices: x.plan.choices }; P.meals = x.plan.meals || 4; $$("[data-meals]").forEach((e) => e.classList.toggle("on", +e.dataset.meals === +P.meals)); ["p", "k", "s"].forEach((k) => $$(`[data-k="${k}"]`).forEach((e) => (e.value = x.plan.macro[k]))); $("#mKcal").value = x.plan.kcal; drawMacro(); toast("Menu dimuat: " + x.name); }));
       $$("[data-del]", area).forEach((b) => (b.onclick = async () => { await Store.deletePlan(b.dataset.del); toast("Menu dihapus"); drawPlan(); }));
     }
 

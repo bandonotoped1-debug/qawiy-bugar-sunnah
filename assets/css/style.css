@@ -533,3 +533,5 @@ body { background: #0d241b linear-gradient(180deg, #11301f 0px, #0d241b 520px) n
 .chat-wa { display: block; text-align: center; font-size: 12.5px; padding: 8px; background: #f3ecd8; color: var(--acc-2); font-weight: 700; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .typing i { animation: none; } }
 @media (max-width: 520px) { .chat-fab span { display: none; } .chat-fab { padding: 6px; } }
+.field-lbl { display: block; font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); margin-top: 4px; }
+#mealCount button { min-width: 52px; }
