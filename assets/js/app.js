@@ -1010,6 +1010,7 @@
             <li><b>Bisa langsung</b>: sabuk dada & jam yang menyiarkan detak jantung standar Bluetooth — mis. Polar, Garmin (mode "Broadcast HR"), Amazfit, Fitbit/Pixel Watch (fitur "Heart Rate Sharing").</li>
             <li><b>Xiaomi</b>: Mi Band/Smart Band generasi lama dengan opsi "Siaran detak jantung" (aktifkan di aplikasi Mi Fitness/Zepp Life). Banyak jam Xiaomi/Redmi generasi baru <u>tidak</u> membuka data detak jantung ke aplikasi lain.</li>
             <li><b>Apple Watch</b>: tidak menyiarkan detak jantung sendiri. Pasang aplikasi penyiar dari App Store (mis. HeartCast, HR Broadcast), mulai latihan di jam, lalu hubungkan dari sini.</li>
+            <li><b>Fitbit & Pixel Watch</b>: data harian (langkah, berat, detak istirahat) juga bisa ditarik lewat kartu <b>Google Health</b> di bawah.</li>
             <li><b>Merek lain (mis. Timeever)</b>: bisa terhubung bila jam mendukung profil detak jantung Bluetooth standar. Jika tidak muncul di daftar, catat manual.</li></ul></details>
         </div>
         <div class="card dev">
@@ -1022,6 +1023,12 @@
             <li><b>Xiaomi Mi Scale / Mi Body Composition Scale 2</b>: mengirim data lewat siaran Bluetooth — eksperimental, butuh Chrome dengan fitur eksperimental aktif.</li>
             <li>Timbangan dengan aplikasi khusus (mis. Fitdays, OKOK) umumnya memakai protokol tertutup — catat beratnya manual.</li></ul></details>
         </div>
+      </div>
+
+      <div class="card section gh" id="ghCard">
+        <div class="row wrap-it"><span class="dev-ic gh-ic">${icon("star", 22)}</span><div style="flex:1;min-width:220px"><b>Google Health</b><div class="muted" style="font-size:13px">Sinkronkan langkah, berat badan, lemak tubuh, dan detak jantung istirahat dari akun Google Health (Fitbit, Pixel Watch, dan catatan di aplikasi Google Health).</div></div>
+          <div class="row wrap-it" id="ghBtns"><span class="muted">Memeriksa…</span></div></div>
+        <div id="ghMsg" class="muted mt8" style="font-size:13.5px"></div>
       </div>
 
       <div class="grid g2 section" style="align-items:start">
@@ -1037,8 +1044,8 @@
       const [w, s, h] = await Promise.all([Store.logs("weight", 90), Store.logs("steps", 14), Store.logs("heart_rate", 60)]);
       $("#wChart").innerHTML = w.length ? lineChart(w, "kg") : `<p class="muted" style="margin:0">Belum ada data berat badan.</p>`;
       if (w.length >= 2) { const dlt = w[w.length - 1].value - w[0].value; $("#wDelta").textContent = (dlt > 0 ? "+" : "") + num1(dlt) + " kg"; }
-      $("#sList").innerHTML = s.slice(-7).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}</span><span class="spacer"></span><b>${Number(x.value).toLocaleString("id-ID")}</b> langkah</div>`).join("") || "";
-      $("#hList").innerHTML = h.slice(-5).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}</span><span class="spacer"></span>rata-rata <b>${Math.round(x.value)}</b> bpm${x.meta && x.meta.max ? ` · maks ${x.meta.max}` : ""}${x.meta && x.meta.minutes ? ` · ${x.meta.minutes} mnt` : ""}</div>`).join("") || `<p class="muted" style="margin:6px 0 0">Belum ada sesi.</p>`;
+      $("#sList").innerHTML = s.slice(-7).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}${x.source === "google_health" ? ' <small class="pill cream">Google Health</small>' : ""}</span><span class="spacer"></span><b>${Number(x.value).toLocaleString("id-ID")}</b> langkah</div>`).join("") || "";
+      $("#hList").innerHTML = h.slice(-5).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}</span><span class="spacer"></span>${x.meta && x.meta.resting ? "istirahat" : "rata-rata"} <b>${Math.round(x.value)}</b> bpm${x.meta && x.meta.max ? ` · maks ${x.meta.max}` : ""}${x.meta && x.meta.minutes ? ` · ${x.meta.minutes} mnt` : ""}</div>`).join("") || `<p class="muted" style="margin:6px 0 0">Belum ada sesi.</p>`;
     };
     const afterWeight = async (kg) => {
       $("#wUpd").innerHTML = `<div class="notice mt16">Berat terbaru <b>${num1(kg)} kg</b>. <button class="btn sm" id="recalc" type="button">Hitung ulang target kalori</button></div>`;
@@ -1090,6 +1097,21 @@
     };
     $("#sForm").onsubmit = async (e) => { const v = +e.target.s.value; if (!(v >= 0)) return; await Store.addLog("steps", v, null, "manual"); e.target.reset(); toast("Langkah tersimpan"); drawLogs(); };
     drawLogs().catch((e) => { $("#wChart").innerHTML = `<p class="muted">Gagal memuat data: ${esc(e.message)}</p>`; });
+    // Google Health
+    const ghDraw = async () => {
+      const st = await Store.googleStatus().catch(() => ({ connected: false }));
+      $("#ghBtns").innerHTML = st.connected
+        ? `<button class="btn sm acc" id="ghSync" type="button">Sinkronkan sekarang</button><button class="btn sm danger" id="ghOff" type="button">Putuskan</button>`
+        : `<button class="btn sm acc" id="ghOn" type="button">Hubungkan Google Health</button>`;
+      if (st.connected) $("#ghMsg").textContent = "Terhubung" + (st.last_sync_at ? " · sinkron terakhir " + fmtDate(st.last_sync_at) : " · belum pernah sinkron");
+      const fail = (e) => { $("#ghMsg").textContent = e.code === "google_disabled" ? "Koneksi Google Health belum diaktifkan oleh admin aplikasi." : e.message; };
+      if ($("#ghOn")) $("#ghOn").onclick = async () => { try { const r = await Store.googleAction("start"); location.href = r.url; } catch (e) { fail(e); } };
+      if ($("#ghSync")) $("#ghSync").onclick = async () => { $("#ghMsg").textContent = "Menyinkronkan…"; try { const r = await Store.googleAction("sync"); $("#ghMsg").textContent = `Tersinkron: ${r.steps} hari langkah, ${r.weight} data berat, ${r.body_fat} data lemak tubuh, ${r.heart_rate} hari detak istirahat.` + (r.errors && r.errors.length ? " Sebagian gagal: " + r.errors.join("; ") : ""); drawLogs(); } catch (e) { fail(e); } };
+      if ($("#ghOff")) $("#ghOff").onclick = async () => { try { await Store.googleAction("disconnect"); toast("Google Health diputuskan"); ghDraw(); } catch (e) { fail(e); } };
+    };
+    ghDraw();
+    const gq = (location.hash.split("?")[1] || "").match(/google=(\w+)/);
+    if (gq) { toast(gq[1] === "ok" ? "Google Health terhubung. Menyinkronkan…" : gq[1] === "batal" ? "Koneksi Google Health dibatalkan" : "Gagal menghubungkan Google Health"); history.replaceState(null, "", "#/perangkat"); if (gq[1] === "ok") setTimeout(() => $("#ghSync") && $("#ghSync").click(), 800); }
     window.addEventListener("hashchange", () => { try { hrConn && hrConn.disconnect(); scale && scale.disconnect(); } catch (e) {} }, { once: true });
   }
 
@@ -1121,7 +1143,8 @@
   let renderId = 0;
   async function render() {
     const my = ++renderId;
-    const [, r, p] = (location.hash || "#/").split("/");
+    const [, r0, p0] = (location.hash || "#/").split("/");
+    const r = (r0 || "").split("?")[0], p = p0 && p0.split("?")[0];
     $("#nav").classList.remove("open"); window.onresize = null; window.scrollTo(0, 0);
     app.innerHTML = '<div class="loading">Memuat…</div>';
     document.title = (S.brand || "QOWIY") + " — Aplikasi Kebugaran Muslim";

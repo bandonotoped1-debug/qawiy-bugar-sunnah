@@ -535,3 +535,5 @@ body { background: #0d241b linear-gradient(180deg, #11301f 0px, #0d241b 520px) n
 @media (max-width: 520px) { .chat-fab span { display: none; } .chat-fab { padding: 6px; } }
 .field-lbl { display: block; font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); margin-top: 4px; }
 #mealCount button { min-width: 52px; }
+.gh { display: grid; gap: 4px; }
+.gh-ic { background: #fff; color: #1a73e8; border: 1px solid var(--line); }

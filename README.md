@@ -47,3 +47,21 @@ Produksi: https://qowiy.vercel.app
 WHO Guidelines on Physical Activity 2020 · Kemenkes RI (G4 G1 L5, Pedoman Gizi Seimbang) · Fernando dkk., *Nutrients* 2019 (puasa Ramadan) · Paluch dkk., *Lancet Public Health* 2022 (langkah harian) · Morton dkk., *BJSM* 2018 (protein) · Watson dkk., *Sleep* 2015 (durasi tidur) · Andrade dkk., *J Am Diet Assoc* 2008 (makan perlahan) · Mifflin dkk., *AJCN* 1990 (BMR). Hadits dirujuk dengan nomor riwayat ke sunnah.com.
 
 > Konten bersifat edukasi umum dan tidak menggantikan konsultasi dokter. Sebaiknya artikel ditinjau oleh ustadz/ahli gizi tim Anda sebelum dipublikasikan.
+
+## Fitur lanjutan & aktivasinya
+
+### Database (jalankan berurutan di Supabase → SQL Editor)
+1. `supabase/migrations/002_gizi_perangkat_chat.sql` — pengaturan makro, menu tersimpan, data tubuh, kuota AI & chat
+2. `supabase/migrations/003_google_health.sql` — sambungan Google Health
+
+### AI (rekomendasi menu & chatbot)
+Vercel → proyek → Settings → Environment Variables: `ANTHROPIC_API_KEY` (atau `OPENROUTER_API_KEY`), opsional `AI_MODEL`. Redeploy. Tanpa kunci, chatbot menjawab dari FAQ dan tetap mengarahkan ke WhatsApp admin.
+
+### Google Health (Fitbit, Pixel Watch, catatan di aplikasi Google Health)
+1. Google Cloud Console → buat proyek → aktifkan **Google Health API** (akses developer baru dibuka bertahap oleh Google).
+2. OAuth consent screen → tambahkan scope `googlehealth.activity_and_fitness.readonly` dan `googlehealth.health_metrics_and_measurements.readonly`. Semua scope Google Health berstatus *Restricted*: lebih dari 100 pengguna butuh verifikasi & audit keamanan Google.
+3. Credentials → OAuth client ID tipe **Web application** → Authorized redirect URI: `https://qowiy.vercel.app/api/google/callback`.
+4. Vercel env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Settings → API Keys → secret). Redeploy.
+
+### Bluetooth (jam pintar & timbangan)
+Web Bluetooth: Chrome/Edge di Android, Windows, macOS, ChromeOS. iPhone/iPad: gunakan browser Bluefy. Profil standar: Heart Rate (0x180D), Weight Scale (0x181D), Body Composition (0x181B).

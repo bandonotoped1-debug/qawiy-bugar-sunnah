@@ -109,6 +109,8 @@
     async addLog(kind, value, meta, source, measured_at) { const u = dme(); if (!u) throw new Error("Silakan masuk dulu"); const d = dload(); d.health_logs = d.health_logs || []; const row = { id: uid(), user_id: u.id, kind, value: +value, meta: meta || null, source: source || "manual", measured_at: measured_at || new Date().toISOString() }; d.health_logs.push(row); dsave(d); return row; },
     async logs(kind, days) { const u = dme(); if (!u) return []; const from = Date.now() - (days || 90) * 864e5; return (dload().health_logs || []).filter((x) => x.user_id === u.id && (!kind || x.kind === kind) && new Date(x.measured_at).getTime() >= from).sort((a, b) => a.measured_at.localeCompare(b.measured_at)); },
     async deleteLog(id) { const d = dload(); d.health_logs = (d.health_logs || []).filter((x) => x.id !== id); dsave(d); },
+    async googleStatus() { return { connected: false, demo: true }; },
+    async googleAction() { const e = new Error("Mode demo: Google Health aktif setelah aplikasi online dan kredensial Google dipasang admin."); e.code = "google_disabled"; throw e; },
     async aiMenu() { const e = new Error("Mode demo: rekomendasi AI aktif setelah aplikasi online dan kunci API dipasang."); e.code = "ai_disabled"; throw e; },
     async mediaUrl(item) {
       if (!item) return null;
@@ -211,6 +213,14 @@
     async addLog(kind, value, meta, source, measured_at) { const s = await Supa.session(); if (!s) throw new Error("Silakan masuk dulu"); return must(await sb.from("health_logs").insert({ user_id: s.user.id, kind, value: +value, meta: meta || null, source: source || "manual", measured_at: measured_at || new Date().toISOString() }).select().single()); },
     async logs(kind, days) { const s = await Supa.session(); if (!s) return []; let q = sb.from("health_logs").select("*").eq("user_id", s.user.id).gte("measured_at", new Date(Date.now() - (days || 90) * 864e5).toISOString()).order("measured_at"); if (kind) q = q.eq("kind", kind); return must(await q); },
     async deleteLog(id) { must(await sb.from("health_logs").delete().eq("id", id)); },
+    async googleStatus() { const r = await sb.rpc("google_link_status"); return r.error ? { connected: false } : r.data; },
+    async googleAction(action) {
+      const { data } = await sb.auth.getSession(); const token = data.session && data.session.access_token;
+      const r = await fetch("/api/google/" + action, { method: "POST", headers: { "content-type": "application/json", Authorization: "Bearer " + (token || "") }, body: "{}" });
+      let j = {}; try { j = await r.json(); } catch (e) {}
+      if (!r.ok) { const e = new Error(j.error || "Google Health gagal (" + r.status + ")"); e.code = j.code; throw e; }
+      return j;
+    },
     async aiMenu(payload) {
       const { data } = await sb.auth.getSession(); const token = data.session && data.session.access_token;
       const r = await fetch("/api/menu", { method: "POST", headers: { "content-type": "application/json", Authorization: "Bearer " + (token || "") }, body: JSON.stringify(payload) });
