@@ -22,10 +22,12 @@ Tanpa konfigurasi, aplikasi berjalan dalam **mode demo** (data di browser). Akun
 ## Menghubungkan database online (Supabase)
 1. Buat proyek di https://supabase.com (gratis).
 2. Buka **SQL Editor** → jalankan isi `supabase/schema.sql`, lalu `supabase/seed.sql` (konten awal: modul, lesson, video contoh, 7 artikel).
-3. **Project Settings → API** → salin *Project URL* dan *anon public key* ke `assets/js/config.js`.
+3. **Project Settings → API Keys** → salin *Project URL* dan *Publishable key* ke `assets/js/config.js`.
 4. **Authentication → URL Configuration** → isi *Site URL* dengan domain Vercel Anda.
-5. Buka aplikasi, **daftar** dengan email Anda, lalu di SQL Editor jalankan:
+5. Daftarkan email admin, lalu **daftar** di aplikasi dengan email itu — akun otomatis menjadi admin:
    ```sql
+   insert into public.admin_emails values ('email-anda@gmail.com') on conflict do nothing;
+   -- akun yang sudah terdaftar:
    update public.profiles set role = 'admin' where email = 'email-anda@gmail.com';
    ```
 6. Masuk ke `/admin` dan ubah **Pengaturan** (nomor WA admin, rekening, QRIS, harga).
