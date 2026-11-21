@@ -1,0 +1,45 @@
+{
+  "note": "Nilai gizi per 100 g bagian yang dapat dimakan. kh = karbohidrat total (termasuk serat). Sumber: USDA FoodData Central (SR Legacy) dan TKPI 2017 Kemenkes RI.",
+  "sources": {
+    "usda": { "name": "USDA FoodData Central (SR Legacy)", "url": "https://fdc.nal.usda.gov/" },
+    "tkpi": { "name": "Tabel Komposisi Pangan Indonesia 2017, Kemenkes RI", "url": "https://www.panganku.org/" }
+  },
+  "foods": [
+    { "id": "nasi_putih", "name": "Nasi putih", "cat": "karbo", "kcal": 130, "p": 2.7, "kh": 28.2, "l": 0.3, "s": 0.4, "unit": ["gelas", 133], "src": "usda" },
+    { "id": "nasi_merah", "name": "Nasi merah", "cat": "karbo", "kcal": 123, "p": 2.7, "kh": 25.6, "l": 1.0, "s": 1.6, "unit": ["gelas", 133], "src": "usda" },
+    { "id": "kentang", "name": "Kentang rebus", "cat": "karbo", "kcal": 86, "p": 1.7, "kh": 20.0, "l": 0.1, "s": 1.8, "unit": ["buah sedang", 105], "src": "usda" },
+    { "id": "ubi", "name": "Ubi jalar rebus", "cat": "karbo", "kcal": 76, "p": 1.4, "kh": 17.7, "l": 0.1, "s": 2.5, "unit": ["buah sedang", 135], "src": "usda" },
+    { "id": "oat", "name": "Havermut (oat)", "cat": "karbo", "kcal": 379, "p": 13.2, "kh": 67.7, "l": 6.5, "s": 10.1, "unit": ["sdm", 8], "src": "usda", "note": "berat kering" },
+    { "id": "roti_gandum", "name": "Roti gandum utuh", "cat": "karbo", "kcal": 252, "p": 12.5, "kh": 42.7, "l": 3.5, "s": 6.0, "unit": ["iris", 28], "src": "usda" },
+    { "id": "jagung", "name": "Jagung manis rebus", "cat": "karbo", "kcal": 96, "p": 3.4, "kh": 21.0, "l": 1.5, "s": 2.4, "src": "usda" },
+
+    { "id": "ayam", "name": "Dada ayam tanpa kulit (matang)", "cat": "protein", "kcal": 165, "p": 31.0, "kh": 0, "l": 3.6, "s": 0, "src": "usda" },
+    { "id": "ikan_nila", "name": "Ikan nila (bakar/kukus)", "cat": "protein", "kcal": 128, "p": 26.2, "kh": 0, "l": 2.7, "s": 0, "src": "usda" },
+    { "id": "tongkol", "name": "Ikan tongkol/cakalang", "cat": "protein", "kcal": 103, "p": 22.0, "kh": 0, "l": 1.0, "s": 0, "src": "usda", "note": "berat mentah" },
+    { "id": "udang", "name": "Udang rebus", "cat": "protein", "kcal": 99, "p": 24.0, "kh": 0.2, "l": 0.3, "s": 0, "src": "usda" },
+    { "id": "telur", "name": "Telur ayam rebus", "cat": "protein", "kcal": 155, "p": 12.6, "kh": 1.1, "l": 10.6, "s": 0, "unit": ["butir", 50], "src": "usda" },
+    { "id": "tempe", "name": "Tempe (kukus/bacem tanpa digoreng)", "cat": "protein", "kcal": 201, "p": 20.8, "kh": 13.5, "l": 8.8, "s": 1.4, "unit": ["potong sedang", 25], "src": "tkpi" },
+    { "id": "tahu", "name": "Tahu (kukus/pepes)", "cat": "protein", "kcal": 80, "p": 10.9, "kh": 0.8, "l": 4.7, "s": 0.1, "unit": ["potong sedang", 50], "src": "tkpi" },
+
+    { "id": "bayam", "name": "Bayam rebus", "cat": "sayur", "kcal": 23, "p": 3.0, "kh": 3.8, "l": 0.3, "s": 2.4, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "kangkung", "name": "Kangkung", "cat": "sayur", "kcal": 19, "p": 2.6, "kh": 3.1, "l": 0.2, "s": 2.1, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "brokoli", "name": "Brokoli rebus", "cat": "sayur", "kcal": 35, "p": 2.4, "kh": 7.2, "l": 0.4, "s": 3.3, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "buncis", "name": "Buncis rebus", "cat": "sayur", "kcal": 35, "p": 1.9, "kh": 7.9, "l": 0.3, "s": 3.2, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "wortel", "name": "Wortel rebus", "cat": "sayur", "kcal": 35, "p": 0.8, "kh": 8.2, "l": 0.2, "s": 3.0, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "kol", "name": "Kol rebus", "cat": "sayur", "kcal": 23, "p": 1.3, "kh": 5.5, "l": 0.1, "s": 1.9, "unit": ["mangkok", 100], "src": "usda" },
+    { "id": "labu_siam", "name": "Labu siam rebus", "cat": "sayur", "kcal": 24, "p": 0.6, "kh": 5.1, "l": 0.5, "s": 2.8, "unit": ["mangkok", 100], "src": "usda" },
+
+    { "id": "pisang", "name": "Pisang", "cat": "buah", "kcal": 89, "p": 1.1, "kh": 22.8, "l": 0.3, "s": 2.6, "unit": ["buah sedang", 100], "src": "usda" },
+    { "id": "pepaya", "name": "Pepaya", "cat": "buah", "kcal": 43, "p": 0.5, "kh": 10.8, "l": 0.3, "s": 1.7, "unit": ["potong", 150], "src": "usda" },
+    { "id": "jeruk", "name": "Jeruk manis", "cat": "buah", "kcal": 47, "p": 0.9, "kh": 11.8, "l": 0.1, "s": 2.4, "unit": ["buah", 130], "src": "usda" },
+    { "id": "apel", "name": "Apel", "cat": "buah", "kcal": 52, "p": 0.3, "kh": 13.8, "l": 0.2, "s": 2.4, "unit": ["buah", 180], "src": "usda" },
+    { "id": "jambu_biji", "name": "Jambu biji", "cat": "buah", "kcal": 68, "p": 2.6, "kh": 14.3, "l": 1.0, "s": 5.4, "unit": ["buah", 100], "src": "usda" },
+    { "id": "semangka", "name": "Semangka", "cat": "buah", "kcal": 30, "p": 0.6, "kh": 7.6, "l": 0.2, "s": 0.4, "unit": ["potong", 150], "src": "usda" },
+    { "id": "kurma", "name": "Kurma", "cat": "buah", "kcal": 282, "p": 2.5, "kh": 75.0, "l": 0.4, "s": 8.0, "unit": ["butir", 7], "src": "usda" },
+
+    { "id": "minyak", "name": "Minyak zaitun/minyak sayur", "cat": "lemak", "kcal": 884, "p": 0, "kh": 0, "l": 100, "s": 0, "unit": ["sdt", 5], "src": "usda" },
+    { "id": "alpukat", "name": "Alpukat", "cat": "lemak", "kcal": 160, "p": 2.0, "kh": 8.5, "l": 14.7, "s": 6.7, "unit": ["buah sedang", 140], "src": "usda" },
+    { "id": "kacang_tanah", "name": "Kacang tanah sangrai", "cat": "lemak", "kcal": 585, "p": 23.7, "kh": 21.5, "l": 49.7, "s": 8.0, "unit": ["sdm", 9], "src": "usda" },
+    { "id": "almond", "name": "Almond", "cat": "lemak", "kcal": 579, "p": 21.2, "kh": 21.6, "l": 49.9, "s": 12.5, "unit": ["butir", 1.2], "src": "usda" }
+  ]
+}

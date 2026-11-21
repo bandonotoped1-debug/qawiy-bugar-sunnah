@@ -281,9 +281,9 @@
           <div class="dalil"><p>“Amal yang paling dicintai Allah adalah yang paling kontinu walaupun sedikit.”</p><a href="https://sunnah.com/bukhari:6464" target="_blank" rel="noopener">HR. Bukhari no. 6464</a></div>
         </div>
       </div>
-      <div class="section"><div class="section-head"><h2>Rencana makan yang direkomendasikan</h2><span class="label muted-d">Hari 1 · ${r.medical ? "perlu tenaga kesehatan" : r.target.toLocaleString("id-ID") + " kkal"} · porsi penukar Kemenkes</span></div>
-        ${r.medical ? `<div class="card"><p class="muted" style="margin:0">Karena kondisi kesehatanmu, rencana makan sebaiknya disusun bersama dokter/ahli gizi. Prinsip umum: sepertiga perut, Isi Piringku, batasi gula-garam-lemak.</p></div>` : mealPlanHTML(H.mealPlan({ target: r.target, protein: r.protein, gender: q.gender, day: 0 }))}
-        ${r.medical ? "" : `<div class="row wrap-it mt16"><a class="btn light" href="#/rencana-makan/1">Buka rencana makan lengkap →</a><span class="muted-d" style="font-size:14px">Menu 7 hari bervariasi + menu sahur & berbuka tersedia untuk member.</span></div>`}
+      <div class="section"><div class="section-head"><h2>Rencana makan yang direkomendasikan</h2><span class="label muted-d">Hari 1 · ${r.medical ? "perlu tenaga kesehatan" : r.target.toLocaleString("id-ID") + " kkal"} · 1 protein per hidangan · porsi dalam gram</span></div>
+        ${r.medical ? `<div class="card"><p class="muted" style="margin:0">Karena kondisi kesehatanmu, rencana makan sebaiknya disusun bersama dokter/ahli gizi. Prinsip umum: sepertiga perut, Isi Piringku, batasi gula-garam-lemak.</p></div>` : `<div id="resPlan"><div class="loading">Menyusun menu…</div></div>`}
+        ${r.medical ? "" : `<div class="row wrap-it mt16"><a class="btn light" href="#/rencana-makan/hari1">Atur makro & buka rencana makan lengkap →</a><span class="muted-d" style="font-size:14px">Menu 7 hari bervariasi + menu sahur & berbuka tersedia untuk member.</span></div>`}
       </div>
       <div class="panel section center">
         <span class="label muted-d">Langkah berikutnya</span>
@@ -291,6 +291,7 @@
         <p class="muted-d">Semua video kelas, rutinitas harian, dan checklist sunnah sudah disiapkan untuk ${trackTxt}.</p>
         <a class="btn acc mt16" href="#/langganan">Pilih paket langganan →</a>
       </div></section>`;
+    if (!r.medical) N.load().then(() => { const el = $("#resPlan"); if (!el) return; const P = loadPrefs(r, q); el.innerHTML = mealCardsHTML(N.autoPlan({ kcal: P.kcal, macro: P, day: 0 })); });
   }
 
   /* ------------------------------------------------------------------ */
@@ -564,7 +565,8 @@
           <div class="card"><span class="label muted">Motivasi trainer</span>
             <div class="grid mt16" style="gap:10px">${filterAudience(motiv).slice(0, 3).map((v) => `<a class="row" style="text-decoration:none;padding:10px;border-radius:12px;background:var(--cream-2)" href="${!state.active && !v.is_free ? "#/langganan" : "#/video/" + v.id}"><span class="pill acc">▶</span><div style="flex:1"><b style="font-size:15px">${esc(v.title)}</b><div class="muted" style="font-size:12.5px">${esc(v.trainer || "")} ${v.duration ? "· " + esc(v.duration) : ""}</div></div>${!state.active && !v.is_free ? "🔒" : ""}</a>`).join("") || '<p class="muted">Belum ada video motivasi.</p>'}</div>
             <a class="btn sm mt16" href="#/motivasi">Semua motivasi →</a></div>
-          <div class="card dashed"><span class="label muted">Rencana makan & kalkulator</span><h3 style="margin:6px 0">Menu hari ini sesuai target kalorimu</h3><p class="muted" style="margin:0 0 12px;font-size:14.5px">Menu 7 hari + menu puasa, plus kalkulator kalori, BMR, IMT, dan lemak tubuh.</p><div class="row wrap-it"><a class="btn sm acc" href="#/rencana-makan/${(new Date().getDay() || 7)}">Lihat menu hari ini →</a><a class="btn sm ghost" href="#/kalkulator">Kalkulator</a></div></div>
+          <div class="card dashed"><span class="label muted">Rencana makan</span><h3 style="margin:6px 0">Menu sesuai makro pilihanmu</h3><p class="muted" style="margin:0 0 12px;font-size:14.5px">Atur % protein, karbo, serat — lemak mengisi sisanya. Menu otomatis, rekomendasi AI, atau susun sendiri.</p><div class="row wrap-it"><a class="btn sm acc" href="#/rencana-makan/hari${(new Date().getDay() || 7)}">Lihat menu hari ini →</a><a class="btn sm ghost" href="#/rencana-makan/susun">Susun menu sendiri</a></div></div>
+          <div class="card"><span class="label muted">Data tubuh</span><h3 style="margin:6px 0" id="dashW">Berat badan</h3><p class="muted" style="margin:0 0 12px;font-size:14.5px">Hubungkan jam pintar & timbangan Bluetooth, atau catat manual.</p><a class="btn sm" href="#/perangkat">Perangkat & grafik →</a></div>
         </div>
       </div>
 
@@ -583,6 +585,7 @@
     </section>`;
 
     drawConnectors(mods);
+    Store.logs("weight", 365).then((w) => { const el = $("#dashW"); if (el && w.length) el.textContent = "Berat terakhir: " + num1(w[w.length - 1].value) + " kg" + (w.length > 1 ? " (" + (w[w.length - 1].value - w[0].value > 0 ? "+" : "") + num1(w[w.length - 1].value - w[0].value) + " kg)" : ""); }).catch(() => {});
     window.onresize = () => drawConnectors(mods);
     $$("#habits input").forEach((c) => (c.onchange = async () => {
       const items = {}; $$("#habits input").forEach((x) => (items[x.dataset.k] = x.checked));
@@ -734,9 +737,7 @@
           <ul><li><b>Mifflin-St Jeor</b>: pria 10W + 6,25H − 5A + 5; wanita 10W + 6,25H − 5A − 161</li><li><b>Revised Harris-Benedict</b>: pria 13,397W + 4,799H − 5,677A + 88,362; wanita 9,247W + 3,098H − 4,330A + 447,593</li><li><b>Katch-McArdle</b>: 370 + 21,6 × (1 − lemak%) × W — paling tepat bila % lemak tubuh diketahui</li></ul>
           <p class="muted">W = berat (kg), H = tinggi (cm), A = usia (tahun). Penurunan lebih dari 1 kg/pekan tidak dianjurkan tanpa pengawasan tenaga kesehatan. Asupan di bawah ±1.200 kkal (wanita) atau ±1.500 kkal (pria) sebaiknya dengan pendampingan dokter/ahli gizi.</p>
           <p class="muted" style="font-size:13px">Rujukan: Mifflin MD dkk., Am J Clin Nutr 1990;51:241–7 · Roza AM & Shizgal HM, Am J Clin Nutr 1984;40:168–82 · McArdle WD, Katch FI, Katch VL, <i>Exercise Physiology</i> · Ainsworth BE dkk., Compendium of Physical Activities 2011.</p></div></div>
-        <div class="card mt16"><h3 class="mt0">Contoh kalori makanan sehari-hari (1 porsi penukar)</h3><p class="muted mt0" style="font-size:14px">Berdasarkan Daftar Bahan Makanan Penukar, Kemenkes RI.</p>
-          <div style="overflow-x:auto"><table class="tbl" style="width:100%;border-collapse:collapse;font-size:14px">${Object.entries(H.FOODS).map(([g, list]) => list.slice(0, g === "mk" ? 1 : 4).map((f) => `<tr><td style="padding:7px 4px;border-bottom:1px dashed var(--line)">${esc(f[0])}</td><td style="padding:7px 4px;border-bottom:1px dashed var(--line)">${esc(f[1])} (${f[2]} g)</td><td style="padding:7px 4px;border-bottom:1px dashed var(--line);text-align:right"><b>${H.EX[g].kcal}</b> kkal</td></tr>`).join("")).join("")}
-          <tr><td style="padding:7px 4px">Kurma</td><td style="padding:7px 4px">3 butir (15 g)</td><td style="padding:7px 4px;text-align:right"><b>50</b> kkal</td></tr></table></div></div>
+        <div class="card mt16"><h3 class="mt0">Kandungan gizi makanan per 100 g</h3><p class="muted mt0" style="font-size:14px">Sumber: USDA FoodData Central & TKPI 2017 (Kemenkes RI). Data yang sama dipakai untuk menghitung rencana makan.</p><div id="foodTbl" style="overflow-x:auto"></div></div>
         <div class="card mt16"><h3 class="mt0">Kalori terbakar per 1 jam olahraga</h3><p class="muted mt0" style="font-size:14px">Perkiraan = MET × berat badan (kg) × durasi (jam). MET dari Compendium of Physical Activities.</p><div id="exTbl"></div></div>`;
     }
     if (tab === "bmr") {
@@ -805,54 +806,286 @@
       }
     };
     $("#cf").oninput = calc;
+    if (tab === "kalori") N.load().then((db) => { const el = $("#foodTbl"); if (!el) return; const cats = { karbo: "Makanan pokok", protein: "Protein", sayur: "Sayur", buah: "Buah", lemak: "Lemak" };
+      el.innerHTML = `<table class="ftbl"><tr><th>Bahan</th><th>kkal</th><th>Protein</th><th>Karbo</th><th>Serat</th><th>Lemak</th><th>Sumber</th></tr>${Object.keys(cats).map((c) => `<tr class="cat"><td colspan="7">${cats[c]}</td></tr>` + db.foods.filter((f) => f.cat === c).map((f) => `<tr><td>${esc(f.name)}${f.note ? ` <small class="muted">(${esc(f.note)})</small>` : ""}</td><td>${f.kcal}</td><td>${num(f.p, 1)} g</td><td>${num(f.kh, 1)} g</td><td>${num(f.s, 1)} g</td><td>${num(f.l, 1)} g</td><td><small>${f.src === "tkpi" ? "TKPI" : "USDA"}</small></td></tr>`).join("")).join("")}</table>`; });
     const bf = sessionStorage.getItem("qowiy_bf");
     if (tab === "kalori" && bf) { $("#cf").bodyfat.value = bf; $("#cf").formula.value = "katch"; sessionStorage.removeItem("qowiy_bf"); }
     calc();
   }
 
   /* ------------------------------------------------------------------ */
-  /* RENCANA MAKAN                                                       */
+  /* RENCANA MAKAN — makro %, menu otomatis, rekomendasi AI, susun sendiri */
   /* ------------------------------------------------------------------ */
+  const N = window.Nutrition;
+  const CAT_IC = { karbo: "bowl", protein: "dumbbell", sayur: "check", buah: "date", lemak: "star" };
+  const PART_LABEL = { karbo: "Makanan pokok", protein: "Protein (1 macam)", sayur: "Sayur", buah: "Buah", lemak: "Lemak / pelengkap" };
+  const num1 = (x) => Number(x).toLocaleString("id-ID", { maximumFractionDigits: 1 });
+
   function planInputs() {
     const q = Object.assign({}, quiz(), (state.me && state.me.quiz) || {});
     if (!q.done && !q.weight) return null;
-    const r = q.result || computeResult(q);
-    return { q, r };
+    return { q, r: q.result || computeResult(q) };
   }
-  const GROUP_IC = { kh: "🍚", hr: "🐟", hs: "🥚", nb: "🫘", sy: "🥬", bh: "🍌", mk: "🫒" };
-  function mealPlanHTML(plan, opts) {
-    opts = opts || {};
-    return `<div class="grid ${plan.meals.length > 3 ? "g3" : "g3"}" style="gap:14px">${plan.meals.map((m) => `<div class="card" style="padding:20px">
-        <div class="row"><span class="label muted">${esc(m.t)}</span><span class="spacer"></span><span class="pill acc">${num(m.kcal)} kkal</span></div>
-        <div class="mt8">${m.items.map((it) => `<div class="row" style="padding:8px 0;border-bottom:1px dashed var(--line);align-items:flex-start"><span style="font-size:20px;width:26px">${/ayam/i.test(it.name) ? "🍗" : /udang/i.test(it.name) ? "🦐" : /kurma/i.test(it.name) ? "🌴" : /daging/i.test(it.name) ? "🥩" : GROUP_IC[it.g] || "•"}</span><div style="flex:1"><b style="font-size:15px">${esc(it.name)}</b><div class="muted" style="font-size:13px">${esc(it.qty)}${it.grams ? ` · ±${it.grams} g` : ""}</div></div><span class="muted" style="font-size:12.5px;white-space:nowrap">${it.kcal} kkal</span></div>`).join("")}</div>
-      </div>`).join("")}</div>
-      <div class="grid g4 mt16" style="gap:10px">${[["Energi", num(plan.total.kcal) + " kkal"], ["Protein", plan.total.p + " g"], ["Karbohidrat", plan.total.k + " g"], ["Lemak", plan.total.l + " g"]].map(([a, b]) => `<div class="metric" style="padding:14px"><span class="label muted-d">${a}</span><b style="font-size:22px">${b}</b></div>`).join("")}</div>
-      ${plan.raised ? `<div class="notice mt16">Target dinaikkan ke ${num(plan.target)} kkal — batas bawah aman tanpa pendampingan tenaga kesehatan.</div>` : ""}
-      ${opts.notes === false ? "" : `<div class="card mt16" style="background:var(--cream-2)"><b>Adab & tips</b><ul class="muted" style="margin:8px 0 0;padding-left:18px;font-size:14.5px"><li>Awali dengan basmalah, makan dengan tangan kanan, dan berhenti sebelum kenyang (sepertiga perut).</li><li>Minum air putih 8 gelas sehari, sambil duduk; hindari minuman manis (gula ≤ 50 g/hari).</li><li>Takaran memakai <b>Daftar Bahan Makanan Penukar</b> Kemenkes — tukar bebas dalam satu golongan (mis. nasi ¾ gelas = 2 buah kentang sedang).</li><li>Masak dengan cara rebus, kukus, pepes, panggang, atau tumis sedikit minyak.</li></ul></div>`}`;
+  const MKEY = "qowiy_macro";
+  function loadPrefs(r, q) {
+    let saved = null;
+    try { saved = (state.me && state.me.nutrition) || JSON.parse(localStorage.getItem(MKEY) || "null"); } catch (e) {}
+    const base = N.defaultMacro(q.goal === "kuat" ? "kuat" : r.track === "turun" ? "turun" : "seimbang");
+    return Object.assign({ kcal: r.target }, base, saved || {});
+  }
+  async function savePrefs(p) {
+    localStorage.setItem(MKEY, JSON.stringify(p));
+    if (state.me) { try { await Store.updateMe({ nutrition: p }); state.me.nutrition = p; } catch (e) { /* kolom belum ada → tetap tersimpan lokal */ } }
   }
 
-  async function viewMealPlan(dayParam) {
+  function mealCardsHTML(plan) {
+    const t = plan.target, tot = plan.total;
+    const bar = (lbl, got, want, unit, color) => { const pct = want ? Math.round((got / want) * 100) : 0;
+      return `<div class="mbar"><div class="row"><b>${lbl}</b><span class="spacer"></span><span>${num1(got)} / ${num1(Math.round(want))} ${unit}</span><span class="pill ${pct >= 90 && pct <= 110 ? "acc" : "cream"}">${pct}%</span></div><div class="mtrack"><i style="width:${Math.min(100, pct)}%;background:${color}"></i></div></div>`; };
+    return `<div class="meals">${plan.meals.map((m) => `
+      <article class="meal">
+        <header><span class="label">${esc(m.t)}</span><span class="pill acc">${num(m.total.kcal)} kkal</span></header>
+        <h4>${esc(m.dish)}</h4>
+        <ul>${m.items.map((it) => `<li><span class="mi">${icon(CAT_IC[it.part] || "bowl", 18)}</span><div><b>${esc(it.name)}</b><small>${it.grams} g ${it.qty ? "· " + esc(it.qty) : ""}</small></div><span class="mm">P ${num1(it.p)} · K ${num1(it.k)} · L ${num1(it.l)}</span></li>`).join("")}</ul>
+        <footer>Protein ${num1(m.total.p)} g · Karbo ${num1(m.total.k)} g · Serat ${num1(m.total.s)} g · Lemak ${num1(m.total.l)} g</footer>
+      </article>`).join("")}</div>
+      <div class="card mt16 totals"><div class="row"><span class="label muted">Total sehari vs target</span></div>
+        ${bar("Energi", tot.kcal, t.kcal, "kkal", "linear-gradient(90deg,#0f5a40,#d4a93c)")}${bar("Protein", tot.p, t.g.p, "g", "#0f5a40")}${bar("Karbohidrat", tot.k, t.g.k, "g", "#d4a93c")}${bar("Serat", tot.s, t.g.s, "g", "#7cc243")}${bar("Lemak", tot.l, t.g.l, "g", "#c8873c")}
+        <p class="muted" style="font-size:12.5px;margin:10px 0 0">Gram dihitung otomatis dari database gizi per 100 g (USDA FoodData Central & TKPI Kemenkes). Selisih kecil wajar karena porsi dibulatkan per 5 g.</p></div>`;
+  }
+
+  async function viewMealPlan(param) {
+    await N.load();
     const inp = planInputs();
-    if (!inp) { app.innerHTML = `<section class="wrap quiz"><div class="card center"><div style="font-size:40px">🍽️</div><h2>Isi tes kebugaran dulu</h2><p class="muted">Rencana makan disusun dari usia, berat, tinggi, aktivitas, dan tujuanmu.</p><a class="btn acc" href="#/kuis">Mulai tes 2 menit →</a></div></section>`; return; }
+    if (!inp) { app.innerHTML = `<section class="wrap quiz"><div class="card center"><h2>Isi tes kebugaran dulu</h2><p class="muted">Rencana makan disusun dari usia, berat, tinggi, aktivitas, dan tujuanmu.</p><a class="btn acc" href="#/kuis">Mulai tes 2 menit →</a></div></section>`; return; }
     const { q, r } = inp;
-    const fasting = (dayParam || "").startsWith("puasa");
-    const day = Math.max(0, Math.min(6, (parseInt((dayParam || "").replace("puasa", ""), 10) || 1) - 1));
-    const locked = !state.active && (day > 0 || fasting);
-    if (r.medical) {
-      app.innerHTML = `<section class="wrap quiz"><div class="card"><h2 class="mt0">Rencana makan perlu disusun bersama tenaga kesehatan</h2><p class="muted">Kamu menandai kondisi ${q.health === "hamil" ? "hamil/menyusui" : "penyakit kronis (diabetes/hipertensi/jantung)"}. Kebutuhan gizimu berbeda dan perlu dihitung oleh dokter atau ahli gizi. Kamu tetap bisa memakai prinsip sepertiga perut, Isi Piringku, dan membatasi gula-garam-lemak.</p><a class="btn" href="#/kalkulator">Buka kalkulator</a></div></section>`;
-      return;
-    }
-    const plan = H.mealPlan({ target: r.target, protein: r.protein, gender: q.gender, day, fasting });
-    const tabs = [...Array(7)].map((_, i) => `<a href="#/rencana-makan/${i + 1}"><button class="${!fasting && day === i ? "on" : ""}">Hari ${i + 1}${!state.active && i > 0 ? " 🔒" : ""}</button></a>`).join("") + `<a href="#/rencana-makan/puasa${day + 1}"><button class="${fasting ? "on" : ""}">🌙 Hari puasa${!state.active ? " 🔒" : ""}</button></a>`;
+    if (r.medical) { app.innerHTML = `<section class="wrap quiz"><div class="card"><h2 class="mt0">Rencana makan perlu disusun bersama tenaga kesehatan</h2><p class="muted">Kamu menandai kondisi ${q.health === "hamil" ? "hamil/menyusui" : "penyakit kronis"}. Kebutuhan gizimu perlu dihitung dokter atau ahli gizi.</p><a class="btn" href="#/kalkulator">Buka kalkulator</a></div></section>`; return; }
+    const mode = param || "hari1";
+    const day = /^hari(\d)$/.test(mode) ? Math.min(7, Math.max(1, +mode.slice(4))) - 1 : 0;
+    const fasting = mode === "puasa";
+    const isAI = mode === "ai", isBuild = mode === "susun";
+    const locked = !state.active && mode !== "hari1";
+    const P = loadPrefs(r, q);
+    const tabs = [...Array(7)].map((_, i) => [`hari${i + 1}`, `Hari ${i + 1}`]).concat([["puasa", "Hari puasa"], ["ai", "Rekomendasi AI"], ["susun", "Susun sendiri"]]);
+
     app.innerHTML = `<section class="wrap">
-      <div class="result-hero" style="padding:30px"><span class="label">Rencana makan · ${esc(q.name || state.me && state.me.full_name || "")}</span>
-        <h1 style="font-size:clamp(26px,4.4vw,42px)">${num(plan.target)} kkal/hari · ${r.track === "turun" ? "Jalur Turun Berat" : "Jalur Bugar & Kuat"}</h1>
-        <p style="margin:0">Protein ±${plan.total.p} g · ${num(plan.exchanges.kh, 1)} porsi makanan pokok · ${plan.exchanges.sy} porsi sayur · ${plan.exchanges.bh} porsi buah. Disusun dari hasil tes kebugaranmu.</p></div>
-      <div class="slot-tabs mt24">${tabs}</div>
-      ${locked ? `<div class="lockwall"><div style="font-size:30px">🔒</div><h2 class="display" style="font-size:24px">Menu 7 hari & menu hari puasa khusus member</h2><p class="muted-d">Hari 1 bisa kamu coba gratis. Buka semua variasi menu, menu sahur–berbuka, dan program latihannya.</p><a class="btn acc" href="#/langganan">Lihat paket →</a></div>` : mealPlanHTML(plan)}
-      <div class="row wrap-it mt24"><a class="btn light sm" href="#/kalkulator/kalori">Hitung ulang di kalkulator</a><a class="btn ghost sm" href="#/kuis">Ulangi tes</a>${!locked ? `<button class="btn ghost sm" onclick="window.print()">Cetak</button>` : ""}</div>
-      <p class="muted-d" style="font-size:13px">Rujukan: Daftar Bahan Makanan Penukar & Pedoman Gizi Seimbang (Kemenkes RI); kebutuhan energi dengan rumus Mifflin-St Jeor. Rencana ini edukasi umum, bukan diet terapi.</p>
+      <div class="result-hero" style="padding:28px 30px"><span class="label">Rencana makan · ${esc(q.name || (state.me && state.me.full_name) || "")}</span>
+        <h1 style="font-size:clamp(26px,4.2vw,40px)">Atur makro, menu menyesuaikan.</h1>
+        <p style="margin:0">Protein, karbohidrat, dan serat kamu atur dalam persen — <b>lemak otomatis mengisi sisanya</b>. Setiap hidangan memakai satu sumber protein dan porsinya dihitung dalam gram.</p></div>
+
+      <div class="macro card mt24" id="macroBox">
+        <div class="macro-grid">
+          <div>
+            <label class="field"><span>Target energi harian (kkal)</span><input id="mKcal" type="number" min="1000" max="5000" step="10" value="${Math.round(P.kcal)}"></label>
+            <div class="chips">${N.PRESETS.map((p) => `<button type="button" data-preset="${p.id}" class="${P.preset === p.id ? "on" : ""}" title="${esc(p.desc)}">${esc(p.name)}</button>`).join("")}</div>
+            ${[["p", "Protein", 5, 60], ["k", "Karbohidrat", 5, 75], ["s", "Serat", 0, 20]].map(([k, t, lo, hi]) => `<div class="slider"><div class="row"><b>${t}</b><span class="spacer"></span><input class="pct" type="number" data-k="${k}" min="${lo}" max="${hi}" value="${P[k]}"><span>%</span></div><input type="range" data-k="${k}" min="${lo}" max="${hi}" step="1" value="${P[k]}"></div>`).join("")}
+            <div class="slider"><div class="row"><b>Lemak</b><span class="spacer"></span><b id="fatPct"></b><span class="muted" style="font-size:12.5px">(sisa otomatis)</span></div></div>
+          </div>
+          <div>
+            <div class="stack" id="mStack"></div>
+            <table class="mt" id="mTable"></table>
+            <div id="mWarn"></div>
+            <div class="row wrap-it mt16"><button class="btn sm acc" id="mSave" type="button">Simpan pengaturan</button><span class="muted" style="font-size:12.5px">Tersimpan di akunmu dan dipakai di semua menu.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slot-tabs mt24">${tabs.map(([k, t]) => `<a href="#/rencana-makan/${k}"><button class="${mode === k ? "on" : ""}">${t}${!state.active && k !== "hari1" ? " 🔒" : ""}</button></a>`).join("")}</div>
+      <div id="planArea"></div>
+      <p class="muted-d" style="font-size:12.5px">Rujukan nilai gizi: USDA FoodData Central (SR Legacy) dan Tabel Komposisi Pangan Indonesia 2017 (Kemenkes RI). Rentang makro anjuran: Institute of Medicine (2005). Rencana ini edukasi umum, bukan diet terapi.</p>
     </section>`;
+
+    const cur = () => ({ kcal: +$("#mKcal").value || P.kcal, p: +$('input.pct[data-k="p"]').value, k: +$('input.pct[data-k="k"]').value, s: +$('input.pct[data-k="s"]').value, preset: P.preset });
+    let buildChoices = null, aiResult = null;
+    const drawMacro = () => {
+      const m = cur(), t = N.targets(m.kcal, m);
+      $("#fatPct").textContent = t.pct.l + "%";
+      $("#mStack").innerHTML = [["p", "Protein", "#0f5a40"], ["k", "Karbo", "#d4a93c"], ["s", "Serat", "#7cc243"], ["l", "Lemak", "#c8873c"]].map(([k, n, c]) => `<i style="width:${t.pct[k]}%;background:${c}" title="${n} ${t.pct[k]}%"></i>`).join("");
+      $("#mTable").innerHTML = `<tr><th></th><th>%</th><th>gram/hari</th><th>kkal</th></tr>` + [["p", "Protein", 4], ["k", "Karbohidrat", 4], ["s", "Serat", 2], ["l", "Lemak", 9]].map(([k, n, f]) => `<tr><td>${n}</td><td>${t.pct[k]}%</td><td><b>${Math.round(t.g[k])} g</b></td><td>${Math.round(t.g[k] * f)}</td></tr>`).join("");
+      $("#mWarn").innerHTML = N.warnings(t).map(([lv, msg]) => `<div class="mwarn ${lv}">${esc(msg)}</div>`).join("");
+      drawPlan();
+    };
+    const sync = (k, v) => { $$(`[data-k="${k}"]`).forEach((x) => (x.value = v)); P.preset = "custom"; $$("[data-preset]").forEach((b) => b.classList.remove("on")); drawMacro(); };
+    $$("#macroBox input[type=range], #macroBox input.pct").forEach((inp2) => (inp2.oninput = () => sync(inp2.dataset.k, inp2.value)));
+    $("#mKcal").oninput = drawMacro;
+    $$("[data-preset]").forEach((b) => (b.onclick = () => { const p = N.PRESETS.find((x) => x.id === b.dataset.preset); ["p", "k", "s"].forEach((k) => $$(`[data-k="${k}"]`).forEach((x) => (x.value = p[k]))); P.preset = p.id; $$("[data-preset]").forEach((x) => x.classList.toggle("on", x === b)); drawMacro(); }));
+    $("#mSave").onclick = async () => { const m = cur(); Object.assign(P, m); await savePrefs(m); toast("Pengaturan makro tersimpan"); };
+
+    function drawPlan() {
+      const area = $("#planArea"), m = cur();
+      if (locked) { area.innerHTML = `<div class="lockwall"><h2 class="display" style="font-size:24px">Menu 7 hari, menu puasa, rekomendasi AI, dan susun menu sendiri khusus member</h2><p class="muted-d">Hari 1 bisa kamu coba gratis — makro di atas tetap bisa kamu atur.</p><a class="btn acc" href="#/langganan">Lihat paket →</a></div>`; return; }
+      if (isAI) {
+        if (!aiResult) { area.innerHTML = `<div class="card ai-box"><span class="kicker dark">Rekomendasi AI</span><h3 style="margin:4px 0 8px">Biarkan AI memilih kombinasi menu untuk makro di atas</h3>
+          <p class="muted" style="margin-top:0">AI memilih bahan dan memberi nama hidangan; porsi gram tetap dihitung dari database gizi agar angkanya akurat.</p>
+          <label class="field"><span>Catatan (opsional)</span><input id="aiNote" maxlength="200" placeholder="mis. tidak suka udang, ingin menu murah, sedang di kos tanpa kompor besar"></label>
+          <div class="field"><span>Hindari bahan</span><div class="chips">${N.byCat("protein").concat(N.byCat("karbo")).map((f) => `<label class="chip-check"><input type="checkbox" value="${f.id}"><span>${esc(f.name.split(" (")[0])}</span></label>`).join("")}</div></div>
+          <label class="check"><input type="checkbox" id="aiFast"> Menu hari puasa (sahur–berbuka)</label>
+          <div class="err" id="aiErr"></div>
+          <button class="btn acc mt16" id="aiGo" type="button">Buat rekomendasi AI</button></div>`;
+          $("#aiGo").onclick = async () => {
+            const btn = $("#aiGo"); btn.disabled = true; btn.textContent = "AI sedang menyusun menu…"; $("#aiErr").textContent = "";
+            const t = N.targets(m.kcal, m); const fast = $("#aiFast").checked;
+            try {
+              const res = await Store.aiMenu({ target: { kcal: t.kcal, p: t.g.p, k: t.g.k, s: t.g.s, l: t.g.l }, fasting: fast, note: $("#aiNote").value, avoid: $$(".ai-box .chip-check input:checked").map((x) => x.value) });
+              const sl = N.slots(fast), auto = N.autoChoices(0, fast);
+              const choices = sl.map((s, i) => { const a = res.meals.find((x) => x.slot === s.id) || res.meals[i] || {}; const c = Object.assign({}, auto[i]); s.parts.forEach((part) => { if (a[part]) c[part] = a[part]; }); if (a.dish) c.dish = a.dish; return c; });
+              aiResult = { res, fast, choices }; drawPlan();
+            } catch (e) {
+              $("#aiErr").textContent = e.code === "ai_disabled" ? "Fitur AI belum diaktifkan oleh admin. Sementara itu, gunakan menu otomatis Hari 1–7 atau Susun sendiri." : e.message;
+              btn.disabled = false; btn.textContent = "Buat rekomendasi AI";
+            }
+          };
+          return;
+        }
+        const plan = N.plan({ kcal: m.kcal, macro: m, fasting: aiResult.fast, choices: aiResult.choices });
+        area.innerHTML = `<div class="card ai-head"><div><span class="kicker dark">Rekomendasi AI</span><h3 style="margin:2px 0">${esc(aiResult.res.judul)}</h3>${aiResult.res.tips ? `<p class="muted" style="margin:0">${esc(aiResult.res.tips)}</p>` : ""}</div><div class="row wrap-it"><button class="btn sm ghost" id="aiAgain" type="button">Buat ulang</button><button class="btn sm acc" id="aiSave" type="button">Simpan menu</button></div></div>` + mealCardsHTML(plan);
+        $("#aiAgain").onclick = () => { aiResult = null; drawPlan(); };
+        $("#aiSave").onclick = () => savePlanDialog(aiResult.res.judul, { kcal: m.kcal, macro: m, fasting: aiResult.fast, choices: aiResult.choices, source: "ai" });
+        return;
+      }
+      if (isBuild) { drawBuilder(area, m); return; }
+      area.innerHTML = mealCardsHTML(N.autoPlan({ kcal: m.kcal, macro: m, day, fasting }));
+    }
+
+    async function drawBuilder(area, m) {
+      const fast = !!(buildChoices && buildChoices.fasting);
+      const sl = N.slots(fast);
+      if (!buildChoices) buildChoices = { fasting: false, choices: N.autoChoices(0, false) };
+      const opt = (cat, sel) => N.byCat(cat).map((f) => `<option value="${f.id}" ${f.id === sel ? "selected" : ""}>${esc(f.name)}</option>`).join("");
+      const plan = N.plan({ kcal: m.kcal, macro: m, fasting: fast, choices: buildChoices.choices });
+      const saved = state.me ? await Store.listPlans().catch(() => []) : [];
+      area.innerHTML = `<div class="card builder"><div class="row wrap-it"><div><span class="kicker dark">Susun sendiri</span><h3 style="margin:2px 0">Pilih bahan, porsi dihitung otomatis</h3></div><span class="spacer"></span><label class="check"><input type="checkbox" id="bFast" ${fast ? "checked" : ""}> Hari puasa</label></div>
+        <div class="bgrid">${sl.map((s, i) => `<div class="bslot"><b>${esc(s.t)}</b>${s.parts.filter((p) => !(s.fixed && s.fixed[p])).map((part) => `<label class="field"><span>${PART_LABEL[part]}</span><select data-slot="${i}" data-part="${part}">${part === "lemak" ? `<option value="">— tanpa —</option>` : ""}${opt(part === "lemak" && s.id === "selingan" ? "lemak" : part, buildChoices.choices[i] && buildChoices.choices[i][part])}</select></label>`).join("")}${s.fixed ? `<p class="muted" style="font-size:13px;margin:0">Berbuka dengan kurma (sunnah).</p>` : ""}</div>`).join("")}</div>
+        <div class="row wrap-it mt16"><button class="btn sm acc" id="bSave" type="button">Simpan menu ini</button><button class="btn sm ghost" id="bAuto" type="button">Isi otomatis</button></div></div>
+        ${mealCardsHTML(plan)}
+        <div class="card mt16"><span class="label muted">Menu tersimpan</span>${saved.length ? `<div class="saved">${saved.map((x) => `<div class="row"><div style="flex:1"><b>${esc(x.name)}</b><div class="muted" style="font-size:12.5px">${fmtDate(x.created_at)} · ${x.plan && x.plan.source === "ai" ? "dari AI" : "susun sendiri"}</div></div><button class="btn sm light" data-load="${x.id}" type="button">Buka</button><button class="btn sm danger" data-del="${x.id}" type="button">Hapus</button></div>`).join("")}</div>` : `<p class="muted">Belum ada menu tersimpan.</p>`}</div>`;
+      $$("[data-slot]", area).forEach((sel) => (sel.onchange = () => { const i = +sel.dataset.slot; buildChoices.choices[i] = Object.assign({}, buildChoices.choices[i], { [sel.dataset.part]: sel.value, dish: undefined }); drawPlan(); }));
+      $("#bFast").onchange = () => { const f = $("#bFast").checked; buildChoices = { fasting: f, choices: N.autoChoices(0, f) }; drawPlan(); };
+      $("#bAuto").onclick = () => { buildChoices = { fasting: fast, choices: N.autoChoices(Math.floor(Math.random() * 7), fast) }; drawPlan(); };
+      $("#bSave").onclick = () => savePlanDialog("Menu saya", { kcal: m.kcal, macro: m, fasting: fast, choices: buildChoices.choices, source: "user" });
+      $$("[data-load]", area).forEach((b) => (b.onclick = () => { const x = saved.find((s) => s.id === b.dataset.load); buildChoices = { fasting: !!x.plan.fasting, choices: x.plan.choices }; ["p", "k", "s"].forEach((k) => $$(`[data-k="${k}"]`).forEach((e) => (e.value = x.plan.macro[k]))); $("#mKcal").value = x.plan.kcal; drawMacro(); toast("Menu dimuat: " + x.name); }));
+      $$("[data-del]", area).forEach((b) => (b.onclick = async () => { await Store.deletePlan(b.dataset.del); toast("Menu dihapus"); drawPlan(); }));
+    }
+
+    function savePlanDialog(name, plan) {
+      if (!state.me) { toast("Masuk dulu untuk menyimpan menu"); return; }
+      UI.modal(`<form id="spf"><h3 style="margin-top:0">Simpan menu</h3><label class="field"><span>Nama menu</span><input name="n" maxlength="80" value="${esc(name)}" required></label><div class="row"><button type="button" class="btn ghost" data-close>Batal</button><span class="spacer"></span><button class="btn acc">Simpan</button></div></form>`,
+        (mEl, close) => ($("#spf", mEl).onsubmit = async (e) => { e.preventDefault(); try { await Store.savePlan(e.target.n.value.trim(), plan); close(); toast("Menu tersimpan"); if (isBuild) drawPlan(); } catch (x) { toast(x.message); } }));
+    }
+    drawMacro();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* PERANGKAT — jam pintar & timbangan Bluetooth                         */
+  /* ------------------------------------------------------------------ */
+  function lineChart(points, unit) {
+    if (points.length < 2) return `<p class="muted" style="margin:0">Butuh minimal 2 data untuk grafik.</p>`;
+    const W = 640, Hh = 180, pad = 28, xs = points.map((p) => new Date(p.measured_at).getTime()), ys = points.map((p) => +p.value);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys) - 1, y1 = Math.max(...ys) + 1;
+    const X = (x) => pad + ((x - x0) / Math.max(1, x1 - x0)) * (W - pad * 2), Y = (y) => Hh - pad - ((y - y0) / Math.max(0.1, y1 - y0)) * (Hh - pad * 2);
+    const d = points.map((p, i) => (i ? "L" : "M") + X(xs[i]).toFixed(1) + " " + Y(ys[i]).toFixed(1)).join(" ");
+    return `<svg viewBox="0 0 ${W} ${Hh}" class="chart" role="img" aria-label="Grafik ${unit}"><path d="${d}" fill="none" stroke="#0f5a40" stroke-width="2.5"/>${points.map((p, i) => `<circle cx="${X(xs[i]).toFixed(1)}" cy="${Y(ys[i]).toFixed(1)}" r="3.5" fill="#d4a93c"><title>${fmtDate(p.measured_at)}: ${num1(p.value)} ${unit}</title></circle>`).join("")}
+      <text x="${pad}" y="14" font-size="11" fill="#6b6f63">${num1(y1 - 1)} ${unit}</text><text x="${pad}" y="${Hh - 8}" font-size="11" fill="#6b6f63">${num1(y0 + 1)} ${unit}</text></svg>`;
+  }
+
+  async function viewDevices() {
+    if (!state.me) { location.hash = "#/masuk"; return; }
+    const D = window.Devices, ok = D.supported();
+    const age = ((state.me.quiz || quiz()) || {}).age || 30;
+    app.innerHTML = `<section class="wrap">
+      <div class="section-head mt40"><h2>Perangkat & data tubuh</h2><span class="label muted-d">Jam pintar · timbangan · langkah</span></div>
+      ${ok ? "" : `<div class="notice" style="margin-bottom:18px"><b>Browser ini belum mendukung Bluetooth.</b> Gunakan <b>Chrome</b> di Android, Windows, atau Mac. Di iPhone/iPad, Safari belum mendukung Web Bluetooth — buka situs ini lewat aplikasi browser <b>Bluefy</b>. Kamu tetap bisa mencatat data secara manual di bawah.</div>`}
+      <div class="grid g2" style="align-items:start">
+        <div class="card dev">
+          <div class="row"><span class="dev-ic">${icon("walk", 22)}</span><div><b>Jam pintar / sensor detak jantung</b><div class="muted" style="font-size:13px">Detak jantung langsung saat latihan</div></div></div>
+          <div class="hr-live" id="hrLive"><b id="hrVal">--</b><span>bpm</span><div id="hrZone" class="muted">Belum terhubung</div></div>
+          <div class="row wrap-it"><button class="btn sm acc" id="hrBtn" ${ok ? "" : "disabled"} type="button">Hubungkan jam</button><button class="btn sm ghost hidden" id="hrStop" type="button">Selesai & simpan sesi</button></div>
+          <div id="hrStats" class="muted mt8" style="font-size:13.5px"></div>
+          <details class="mt16"><summary class="label">Perangkat yang bisa terhubung</summary><ul class="compat">
+            <li><b>Bisa langsung</b>: sabuk dada & jam yang menyiarkan detak jantung standar Bluetooth — mis. Polar, Garmin (mode "Broadcast HR"), Amazfit, Fitbit/Pixel Watch (fitur "Heart Rate Sharing").</li>
+            <li><b>Xiaomi</b>: Mi Band/Smart Band generasi lama dengan opsi "Siaran detak jantung" (aktifkan di aplikasi Mi Fitness/Zepp Life). Banyak jam Xiaomi/Redmi generasi baru <u>tidak</u> membuka data detak jantung ke aplikasi lain.</li>
+            <li><b>Apple Watch</b>: tidak menyiarkan detak jantung sendiri. Pasang aplikasi penyiar dari App Store (mis. HeartCast, HR Broadcast), mulai latihan di jam, lalu hubungkan dari sini.</li>
+            <li><b>Merek lain (mis. Timeever)</b>: bisa terhubung bila jam mendukung profil detak jantung Bluetooth standar. Jika tidak muncul di daftar, catat manual.</li></ul></details>
+        </div>
+        <div class="card dev">
+          <div class="row"><span class="dev-ic">${icon("check", 22)}</span><div><b>Timbangan Bluetooth</b><div class="muted" style="font-size:13px">Berat badan & lemak tubuh</div></div></div>
+          <div class="hr-live"><b id="wVal">--</b><span>kg</span><div id="wStat" class="muted">Belum terhubung</div></div>
+          <div class="row wrap-it"><button class="btn sm acc" id="wBtn" ${ok ? "" : "disabled"} type="button">Hubungkan timbangan</button><button class="btn sm ghost hidden" id="wSave" type="button">Simpan berat</button></div>
+          <form id="wManual" class="row wrap-it mt16" onsubmit="return false"><input class="input" name="w" type="number" step="0.1" min="25" max="300" placeholder="Berat (kg)" style="max-width:140px"><input class="input" name="f" type="number" step="0.1" min="2" max="70" placeholder="Lemak % (opsional)" style="max-width:170px"><button class="btn sm light">Catat manual</button></form>
+          <details class="mt16"><summary class="label">Timbangan yang bisa terhubung</summary><ul class="compat">
+            <li><b>Bisa langsung</b>: timbangan dengan profil Bluetooth standar <i>Weight Scale</i> / <i>Body Composition</i>.</li>
+            <li><b>Xiaomi Mi Scale / Mi Body Composition Scale 2</b>: mengirim data lewat siaran Bluetooth — eksperimental, butuh Chrome dengan fitur eksperimental aktif.</li>
+            <li>Timbangan dengan aplikasi khusus (mis. Fitdays, OKOK) umumnya memakai protokol tertutup — catat beratnya manual.</li></ul></details>
+        </div>
+      </div>
+
+      <div class="grid g2 section" style="align-items:start">
+        <div class="card"><div class="row"><span class="label muted">Tren berat badan (90 hari)</span><span class="spacer"></span><span id="wDelta" class="pill cream"></span></div><div id="wChart" class="mt16"></div><div id="wUpd"></div></div>
+        <div class="card"><span class="label muted">Langkah harian</span>
+          <form id="sForm" class="row wrap-it mt16" onsubmit="return false"><input class="input" name="s" type="number" min="0" max="100000" placeholder="Langkah hari ini" style="max-width:180px"><button class="btn sm light">Catat</button></form>
+          <p class="muted" style="font-size:12.5px">Data langkah dari aplikasi jam (Mi Fitness, Zepp, Apple Health, dll.) belum bisa ditarik langsung oleh situs web — salin angkanya ke sini.</p>
+          <div id="sList"></div>
+          <span class="label muted mt16" style="display:block">Sesi detak jantung terakhir</span><div id="hList"></div></div>
+      </div></section>`;
+
+    const drawLogs = async () => {
+      const [w, s, h] = await Promise.all([Store.logs("weight", 90), Store.logs("steps", 14), Store.logs("heart_rate", 60)]);
+      $("#wChart").innerHTML = w.length ? lineChart(w, "kg") : `<p class="muted" style="margin:0">Belum ada data berat badan.</p>`;
+      if (w.length >= 2) { const dlt = w[w.length - 1].value - w[0].value; $("#wDelta").textContent = (dlt > 0 ? "+" : "") + num1(dlt) + " kg"; }
+      $("#sList").innerHTML = s.slice(-7).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}</span><span class="spacer"></span><b>${Number(x.value).toLocaleString("id-ID")}</b> langkah</div>`).join("") || "";
+      $("#hList").innerHTML = h.slice(-5).reverse().map((x) => `<div class="row" style="padding:6px 0;border-bottom:1px dashed var(--line)"><span>${fmtDate(x.measured_at)}</span><span class="spacer"></span>rata-rata <b>${Math.round(x.value)}</b> bpm${x.meta && x.meta.max ? ` · maks ${x.meta.max}` : ""}${x.meta && x.meta.minutes ? ` · ${x.meta.minutes} mnt` : ""}</div>`).join("") || `<p class="muted" style="margin:6px 0 0">Belum ada sesi.</p>`;
+    };
+    const afterWeight = async (kg) => {
+      $("#wUpd").innerHTML = `<div class="notice mt16">Berat terbaru <b>${num1(kg)} kg</b>. <button class="btn sm" id="recalc" type="button">Hitung ulang target kalori</button></div>`;
+      $("#recalc").onclick = async () => { const qq = Object.assign({}, quiz(), state.me.quiz || {}, { weight: kg }); qq.result = computeResult(qq); saveQuiz(qq); try { await Store.updateMe({ quiz: qq }); state.me.quiz = qq; } catch (e) {} localStorage.removeItem(MKEY); toast("Target diperbarui: " + qq.result.target.toLocaleString("id-ID") + " kkal"); };
+    };
+    // detak jantung
+    let hrConn = null, samples = [], started = 0;
+    $("#hrBtn").onclick = async () => {
+      try {
+        $("#hrZone").textContent = "Memilih perangkat…";
+        hrConn = await D.connectHeartRate((d) => {
+          if (!d.hr) return; samples.push(d.hr); $("#hrVal").textContent = d.hr;
+          const z = D.zone(d.hr, age); $("#hrZone").innerHTML = `<span style="color:${z.c};font-weight:700">Zona ${z.n}: ${z.t}</span>`;
+          const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+          $("#hrStats").textContent = `Rata-rata ${Math.round(avg)} · maks ${Math.max(...samples)} · min ${Math.min(...samples)} bpm · ${Math.round((Date.now() - started) / 60000)} menit`;
+        }, () => { $("#hrZone").textContent = "Terputus"; });
+        samples = []; started = Date.now();
+        $("#hrZone").textContent = "Terhubung: " + hrConn.name + (hrConn.battery != null ? " · baterai " + hrConn.battery + "%" : "");
+        $("#hrBtn").classList.add("hidden"); $("#hrStop").classList.remove("hidden");
+      } catch (e) { $("#hrZone").textContent = e.name === "NotFoundError" ? "Tidak ada perangkat dipilih." : e.message; }
+    };
+    $("#hrStop").onclick = async () => {
+      if (hrConn) hrConn.disconnect();
+      if (samples.length) { const avg = samples.reduce((a, b) => a + b, 0) / samples.length; await Store.addLog("heart_rate", Math.round(avg), { max: Math.max(...samples), min: Math.min(...samples), minutes: Math.round((Date.now() - started) / 60000) }, hrConn ? hrConn.name : "bluetooth"); toast("Sesi tersimpan"); drawLogs(); }
+      $("#hrStop").classList.add("hidden"); $("#hrBtn").classList.remove("hidden");
+    };
+    // timbangan
+    let last = null, scale = null;
+    $("#wBtn").onclick = async () => {
+      try {
+        scale = await D.connectScale((d) => {
+          if (!d.weight || d.removed) return; last = d; $("#wVal").textContent = num1(d.weight);
+          $("#wStat").textContent = d.stable ? "Stabil" + (d.fat ? " · lemak " + d.fat + "%" : "") : "Mengukur…";
+          if (d.stable) $("#wSave").classList.remove("hidden");
+        }, (msg) => ($("#wStat").textContent = msg));
+      } catch (e) { $("#wStat").textContent = e.name === "NotFoundError" ? "Tidak ada timbangan dipilih." : e.message; }
+    };
+    $("#wSave").onclick = async () => {
+      if (!last) return;
+      await Store.addLog("weight", last.weight, last.fat ? { fat: last.fat } : null, scale ? scale.name : "bluetooth");
+      if (last.fat) await Store.addLog("body_fat", last.fat, null, scale ? scale.name : "bluetooth");
+      toast("Berat tersimpan"); drawLogs(); afterWeight(last.weight); if (scale) scale.disconnect(); $("#wSave").classList.add("hidden");
+    };
+    $("#wManual").onsubmit = async (e) => {
+      const f = e.target, kg = +f.w.value; if (!(kg > 25)) return toast("Isi berat badan");
+      await Store.addLog("weight", kg, f.f.value ? { fat: +f.f.value } : null, "manual");
+      if (f.f.value) await Store.addLog("body_fat", +f.f.value, null, "manual");
+      f.reset(); toast("Berat tersimpan"); drawLogs(); afterWeight(kg);
+    };
+    $("#sForm").onsubmit = async (e) => { const v = +e.target.s.value; if (!(v >= 0)) return; await Store.addLog("steps", v, null, "manual"); e.target.reset(); toast("Langkah tersimpan"); drawLogs(); };
+    drawLogs().catch((e) => { $("#wChart").innerHTML = `<p class="muted">Gagal memuat data: ${esc(e.message)}</p>`; });
+    window.addEventListener("hashchange", () => { try { hrConn && hrConn.disconnect(); scale && scale.disconnect(); } catch (e) {} }, { once: true });
   }
 
   async function viewAccount() {
@@ -868,7 +1101,7 @@
         </form>
         <div class="card"><span class="label muted">Riwayat langganan</span>
           ${state.subs.length ? state.subs.map((s) => `<div class="src"><b>${esc(s.plan_name)}</b> · ${rp(s.amount)}<br><span class="pill ${s.status === "active" ? "acc" : s.status === "pending" ? "gold" : "cream"}">${s.status}</span> <span class="muted" style="font-size:13px">${fmtDate(s.created_at)}${s.expires_at ? " · s.d. " + fmtDate(s.expires_at) : ""}</span></div>`).join("") : '<p class="muted">Belum ada langganan.</p>'}
-          <a class="btn sm mt16" href="#/langganan">Lihat paket</a>
+          <div class="row wrap-it mt16"><a class="btn sm" href="#/langganan">Lihat paket</a><a class="btn sm light" href="#/perangkat">Perangkat & data tubuh</a><a class="btn sm light" href="#/rencana-makan/susun">Menu tersimpan</a></div>
           <hr style="border:0;border-top:1px dashed var(--line);margin:20px 0">
           <button class="btn danger block" id="logout">Keluar</button></div>
       </div></section>`;
@@ -895,7 +1128,7 @@
         masuk: () => (state.me ? (location.hash = p ? "#/bayar/" + p : "#/dashboard") : viewAuth("masuk", p)),
         lupa: viewForgot, bayar: () => viewPay(p), dashboard: viewDashboard, modul: () => viewModule(p), lesson: () => viewLesson(p),
         video: () => viewVideo(p), rutinitas: () => viewVideoList("routine"), motivasi: () => viewVideoList("motivation"),
-        artikel: () => (p ? viewArticle(decodeURIComponent(p)) : viewArticles()), kalkulator: () => viewCalc(p), "rencana-makan": () => viewMealPlan(p), akun: viewAccount
+        artikel: () => (p ? viewArticle(decodeURIComponent(p)) : viewArticles()), kalkulator: () => viewCalc(p), "rencana-makan": () => viewMealPlan(p), perangkat: viewDevices, akun: viewAccount
       };
       await (routes[r] || viewLanding)();
     } catch (e) {

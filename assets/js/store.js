@@ -48,7 +48,7 @@
       videos: s.videos.map((v) => Object.assign({}, v, { id: v.key, published: true, storage_path: null, thumb_url: "" })),
       articles: s.articles.map((a) => Object.assign({}, a, { id: a.key, published: true, created_at: new Date().toISOString() })),
       users: [{ id: "admin-demo", email: "admin@qowiy.id", password: "admin123", full_name: "Admin QOWIY", role: "admin", whatsapp: "", gender: null, quiz: null, created_at: new Date().toISOString() }],
-      subscriptions: [], progress: [], habits: {}, quiz_leads: []
+      subscriptions: [], progress: [], habits: {}, quiz_leads: [], meal_plans: [], health_logs: []
     };
   }
   function dload() { try { const d = JSON.parse(localStorage.getItem(DKEY)); if (d && d.modules) return d; } catch (e) {} const d = demoSeed(); dsave(d); return d; }
@@ -103,6 +103,13 @@
     async saveHabits(day, items) { const u = dme(); if (!u) return; const d = dload(); d.habits[u.id] = d.habits[u.id] || {}; d.habits[u.id][day] = items; dsave(d); },
     async habitsSince(fromDay) { const u = dme(); if (!u) return {}; const all = dload().habits[u.id] || {}; const out = {}; Object.keys(all).forEach((k) => { if (k >= fromDay) out[k] = all[k]; }); return out; },
     async saveLead(lead) { const d = dload(); d.quiz_leads.push(Object.assign({ id: uid(), created_at: new Date().toISOString() }, lead)); dsave(d); },
+    async listPlans() { const u = dme(); if (!u) return []; return (dload().meal_plans || []).filter((x) => x.user_id === u.id).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+    async savePlan(name, plan) { const u = dme(); if (!u) throw new Error("Silakan masuk dulu"); const d = dload(); d.meal_plans = d.meal_plans || []; const row = { id: uid(), user_id: u.id, name, plan, created_at: new Date().toISOString() }; d.meal_plans.push(row); dsave(d); return row; },
+    async deletePlan(id) { const d = dload(); d.meal_plans = (d.meal_plans || []).filter((x) => x.id !== id); dsave(d); },
+    async addLog(kind, value, meta, source, measured_at) { const u = dme(); if (!u) throw new Error("Silakan masuk dulu"); const d = dload(); d.health_logs = d.health_logs || []; const row = { id: uid(), user_id: u.id, kind, value: +value, meta: meta || null, source: source || "manual", measured_at: measured_at || new Date().toISOString() }; d.health_logs.push(row); dsave(d); return row; },
+    async logs(kind, days) { const u = dme(); if (!u) return []; const from = Date.now() - (days || 90) * 864e5; return (dload().health_logs || []).filter((x) => x.user_id === u.id && (!kind || x.kind === kind) && new Date(x.measured_at).getTime() >= from).sort((a, b) => a.measured_at.localeCompare(b.measured_at)); },
+    async deleteLog(id) { const d = dload(); d.health_logs = (d.health_logs || []).filter((x) => x.id !== id); dsave(d); },
+    async aiMenu() { const e = new Error("Mode demo: rekomendasi AI aktif setelah aplikasi online dan kunci API dipasang."); e.code = "ai_disabled"; throw e; },
     async mediaUrl(item) {
       if (!item) return null;
       if (item.storage_path && item.storage_path.startsWith("idb:")) {
@@ -198,6 +205,19 @@
     async saveHabits(day, items) { const s = await Supa.session(); if (!s) return; must(await sb.from("habits").upsert({ user_id: s.user.id, day, items })); },
     async habitsSince(fromDay) { const s = await Supa.session(); if (!s) return {}; const rows = must(await sb.from("habits").select("day,items").eq("user_id", s.user.id).gte("day", fromDay)); const o = {}; rows.forEach((r) => (o[r.day] = r.items)); return o; },
     async saveLead(lead) { const r = await sb.from("quiz_leads").insert(lead); if (r.error) console.warn(r.error); },
+    async listPlans() { const s = await Supa.session(); if (!s) return []; return must(await sb.from("meal_plans").select("*").eq("user_id", s.user.id).order("created_at", { ascending: false })); },
+    async savePlan(name, plan) { const s = await Supa.session(); if (!s) throw new Error("Silakan masuk dulu"); return must(await sb.from("meal_plans").insert({ user_id: s.user.id, name, plan }).select().single()); },
+    async deletePlan(id) { must(await sb.from("meal_plans").delete().eq("id", id)); },
+    async addLog(kind, value, meta, source, measured_at) { const s = await Supa.session(); if (!s) throw new Error("Silakan masuk dulu"); return must(await sb.from("health_logs").insert({ user_id: s.user.id, kind, value: +value, meta: meta || null, source: source || "manual", measured_at: measured_at || new Date().toISOString() }).select().single()); },
+    async logs(kind, days) { const s = await Supa.session(); if (!s) return []; let q = sb.from("health_logs").select("*").eq("user_id", s.user.id).gte("measured_at", new Date(Date.now() - (days || 90) * 864e5).toISOString()).order("measured_at"); if (kind) q = q.eq("kind", kind); return must(await q); },
+    async deleteLog(id) { must(await sb.from("health_logs").delete().eq("id", id)); },
+    async aiMenu(payload) {
+      const { data } = await sb.auth.getSession(); const token = data.session && data.session.access_token;
+      const r = await fetch("/api/menu", { method: "POST", headers: { "content-type": "application/json", Authorization: "Bearer " + (token || "") }, body: JSON.stringify(payload) });
+      let j = {}; try { j = await r.json(); } catch (e) {}
+      if (!r.ok) { const e = new Error(j.error || "Rekomendasi AI gagal (" + r.status + ")"); e.code = j.code; throw e; }
+      return j;
+    },
     async mediaUrl(item) {
       if (!item) return null;
       if (item.storage_path) { const r = await sb.storage.from(CFG.MEDIA_BUCKET || "media").createSignedUrl(item.storage_path, 60 * 60 * 3); if (!r.error) return r.data.signedUrl; }

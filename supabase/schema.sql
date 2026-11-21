@@ -339,3 +339,6 @@ revoke all on public.admin_emails from anon, authenticated;
 --   b) Akun yang sudah terdaftar:
 --        update public.profiles set role = 'admin' where email = 'email-anda@gmail.com';
 -- ---------------------------------------------------------------------
+
+-- =====================================================================
+-- 12. Lihat juga supabase/migrations/ untuk tambahan fitur (002: gizi, perangkat, chat)
