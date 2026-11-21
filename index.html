@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QAWIY — Bugar ala Sunnah</title>
+  <meta name="description" content="Program kebugaran & gaya hidup sehat untuk Muslim dan Muslimah sesuai Al-Qur'an dan Sunnah, dengan artikel kesehatan bersumber ilmiah." />
+  <meta name="theme-color" content="#151917" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317a361'/%3E%3Ctext x='32' y='44' font-family='Arial Black' font-size='34' text-anchor='middle' fill='%23072b1a'%3EQ%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div id="demoBanner" class="demo-banner hidden">Mode demo — data tersimpan di browser ini saja. Hubungkan Supabase di <code>assets/js/config.js</code> agar online.</div>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#/"><span class="brand-mark">Q</span><span class="brand-name" id="brandName">QAWIY</span></a>
+      <button class="burger" id="burger" aria-label="Menu">☰</button>
+      <nav class="nav" id="nav"></nav>
+    </div>
+  </header>
+
+  <main id="app"><div class="loading">Memuat…</div></main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="row wrap-it">
+        <div>
+          <div class="brand-name" id="footBrand">QAWIY</div>
+          <div class="label muted-d mt8" id="footTag">Bugar ala Sunnah</div>
+        </div>
+        <div class="spacer"></div>
+        <nav class="nav" style="display:flex;position:static;flex-direction:row;padding:0;background:none;border:0;flex-wrap:wrap">
+          <a href="#/">Beranda</a><a href="#/langganan">Langganan</a><a href="#/kalkulator">Kalkulator</a><a href="#/artikel">Artikel</a><a href="#/dashboard">Dashboard</a>
+        </nav>
+      </div>
+      <div class="bottom">
+        Konten edukasi, bukan pengganti nasihat dokter. Konsultasikan dengan tenaga kesehatan bila memiliki kondisi medis, sedang hamil/menyusui, atau sebelum memulai program berat.<br />
+        © <span id="year"></span> <span id="footBrand2">QAWIY</span> — All rights reserved.
+      </div>
+    </div>
+  </footer>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/seed.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/health.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
