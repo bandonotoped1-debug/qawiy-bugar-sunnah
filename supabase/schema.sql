@@ -1,5 +1,5 @@
 -- =====================================================================
--- QAWIY — Bugar ala Sunnah
+-- QOWIY — Bugar ala Sunnah
 -- Skema database Supabase (jalankan sekali di SQL Editor Supabase)
 -- Aman dijalankan ulang: memakai IF NOT EXISTS / OR REPLACE.
 -- =====================================================================

@@ -1,4 +1,4 @@
-# QAWIY — Bugar ala Sunnah
+# QOWIY — Bugar ala Sunnah
 
 Aplikasi kebugaran & gaya hidup sehat untuk Muslim dan Muslimah berdasarkan Al-Qur'an dan Sunnah, dengan artikel kesehatan bersumber ilmiah. Strukturnya terinspirasi dari dashboard e-course (peta program, progres otomatis, paket langganan).
 
@@ -17,7 +17,7 @@ Aplikasi kebugaran & gaya hidup sehat untuk Muslim dan Muslimah berdasarkan Al-Q
 - Kelola modul & lesson peta program, tulis artikel (dalil + sumber ilmiah), verifikasi pembayaran & aktifkan langganan, beri akses manual, lihat & unduh CSV hasil kuis + follow-up WA, pengaturan brand/harga/QRIS/rekening.
 
 ## Menjalankan
-Tanpa konfigurasi, aplikasi berjalan dalam **mode demo** (data di browser). Akun admin demo: `admin@qawiy.id` / `admin123`.
+Tanpa konfigurasi, aplikasi berjalan dalam **mode demo** (data di browser). Akun admin demo: `admin@qowiy.id` / `admin123`.
 
 ## Menghubungkan database online (Supabase)
 1. Buat proyek di https://supabase.com (gratis).

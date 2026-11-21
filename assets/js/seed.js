@@ -3,17 +3,17 @@
    Semua artikel ditulis ulang dengan bahasa sendiri; dalil & sumber
    ilmiah dicantumkan agar bisa dicek pembaca.
    ===================================================================== */
-window.QAWIY_SEED = (function () {
+window.QOWIY_SEED = (function () {
   const settings = {
-    brand: "QAWIY",
-    tagline: "Bugar ala Sunnah — sehat untuk ibadah, kuat untuk umat.",
+    brand: "QOWIY",
+    tagline: "Aplikasi Kebugaran Muslim — sehat untuk ibadah, kuat untuk umat.",
     hero_title: "Badan kuat, ibadah makin semangat.",
     hero_sub: "Program kebugaran 12–16 minggu untuk Muslim & Muslimah: latihan yang mengikuti waktu sholat, pola makan sepertiga perut, dan kebiasaan sunnah harian — dipandu trainer, dibuktikan sains.",
     whatsapp: "6281234567890",
     community_link: "",
     payment_link: "",
     qris_url: "",
-    bank_info: "Transfer BSI 7xxxxxxxxx a.n. QAWIY Indonesia",
+    bank_info: "Transfer BSI 7xxxxxxxxx a.n. QOWIY Indonesia",
     plans: [
       {
         id: "mandiri", name: "Program Mandiri", price: 99000, strike: 150000, period: "sekali bayar", badge: "",
@@ -92,7 +92,7 @@ window.QAWIY_SEED = (function () {
     L("l-stuck-1", "m-stuck", 1, "Pecah plateau", "Apa yang dilakukan saat berat berhenti turun: cek porsi, langkah harian, tidur, dan diet break.")
   ];
 
-  const V = (key, kind, title, extra) => Object.assign({ key, kind, title, description: "", trainer: "Coach QAWIY", time_slot: null, days: null, audience: "semua", level: "pemula", video_url: "", duration: "", is_free: false, sort: 0 }, extra);
+  const V = (key, kind, title, extra) => Object.assign({ key, kind, title, description: "", trainer: "Coach QOWIY", time_slot: null, days: null, audience: "semua", level: "pemula", video_url: "", duration: "", is_free: false, sort: 0 }, extra);
 
   const videos = [
     V("v-r1", "routine", "Peregangan & mobilitas Ba'da Subuh", { time_slot: "subuh", duration: "10 menit", description: "Membangunkan sendi dan otot setelah Subuh. Tanpa alat.", sort: 1 }),
@@ -125,7 +125,7 @@ Pedoman WHO 2020 untuk orang dewasa 18–64 tahun:
 - Latihan penguatan otot minimal 2 hari per pekan.
 - Kurangi waktu duduk terlalu lama; gerak sedikit lebih baik daripada tidak sama sekali.
 
-## Praktik di QAWIY
+## Praktik di QOWIY
 Kami membagi target itu mengikuti waktu sholat: peregangan Ba'da Subuh, jalan cepat di waktu Dhuha, latihan beban Ba'da Ashar. Dengan begitu, jadwal sholat menjadi "alarm" alami untuk bergerak.`,
       dalil: [
         { teks: "Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah, dan pada keduanya ada kebaikan.", rujukan: "HR. Muslim no. 2664", url: "https://sunnah.com/muslim:2664" },
@@ -236,7 +236,7 @@ Meta-analisis di The Lancet Public Health (2022) yang menggabungkan 15 kohort in
 
 Kabar baiknya, target ini tidak harus dicapai sekaligus.
 
-## Cara mengumpulkan langkah ala QAWIY
+## Cara mengumpulkan langkah ala QOWIY
 - Jalan kaki ke masjid untuk sholat berjamaah (bagi ikhwan) — 5 kali sehari bisa menyumbang ribuan langkah.
 - Jalan cepat 20–30 menit di waktu Dhuha.
 - Parkir lebih jauh, naik tangga, dan jalan 5 menit setiap selesai duduk satu jam.
@@ -266,7 +266,7 @@ Contoh: berat 60 kg → sekitar 96 g protein per hari, dibagi 3–4 kali makan. 
 - Istirahat cukup — otot tumbuh saat pemulihan.
 
 ## Adab berlatih
-Kenakan pakaian yang menutup aurat dan tidak membentuk tubuh, jaga pandangan, dan pilih tempat latihan yang aman bagi muslimah. Video latihan akhwat di QAWIY dirancang agar bisa dilakukan di rumah.
+Kenakan pakaian yang menutup aurat dan tidak membentuk tubuh, jaga pandangan, dan pilih tempat latihan yang aman bagi muslimah. Video latihan akhwat di QOWIY dirancang agar bisa dilakukan di rumah.
 
 ## Catatan
 Penderita penyakit ginjal atau kondisi medis tertentu perlu berkonsultasi sebelum menaikkan asupan protein.`,

@@ -1,5 +1,5 @@
 /* =====================================================================
-   QAWIY — aplikasi member (SPA berbasis hash route)
+   QOWIY — aplikasi member (SPA berbasis hash route)
    ===================================================================== */
 (async function () {
   const { esc, rp, $, $$, md, toast, playerHTML, waLink, SLOTS, DAYS, fmtDate } = UI;
@@ -11,9 +11,9 @@
   if (Store.mode === "demo") $("#demoBanner").classList.remove("hidden");
   $("#year").textContent = new Date().getFullYear();
   function applyBrand() {
-    ["#brandName", "#footBrand", "#footBrand2"].forEach((s) => ($(s).textContent = S.brand || "QAWIY"));
+    ["#brandName", "#footBrand", "#footBrand2"].forEach((s) => ($(s).textContent = S.brand || "QOWIY"));
     $("#footTag").textContent = S.tagline || "";
-    document.title = (S.brand || "QAWIY") + " — Bugar ala Sunnah";
+    document.title = (S.brand || "QOWIY") + " — Aplikasi Kebugaran Muslim";
   }
   applyBrand();
   $("#burger").onclick = () => $("#nav").classList.toggle("open");
@@ -36,7 +36,7 @@
   /* ------------------------------------------------------------------ */
   /* KUIS                                                                */
   /* ------------------------------------------------------------------ */
-  const QKEY = "qawiy_quiz";
+  const QKEY = "qowiy_quiz";
   const quiz = () => { try { return JSON.parse(localStorage.getItem(QKEY)) || {}; } catch (e) { return {}; } };
   const saveQuiz = (q) => localStorage.setItem(QKEY, JSON.stringify(q));
 
@@ -94,7 +94,7 @@
     app.innerHTML = `
       <section class="wrap landing-hero">
         <div>
-          <span class="pill acc"><span class="dot"></span> Program 12–16 pekan</span>
+          <span class="pill acc">Program 12–16 pekan · Muslim & Muslimah</span>
           <h1>${esc(S.hero_title || "Badan kuat, ibadah makin semangat.").replace(/kuat/i, "<em>kuat</em>")}</h1>
           <p style="font-size:18px;max-width:560px" class="muted-d">${esc(S.hero_sub || "")}</p>
           <div class="row wrap-it mt24">
@@ -104,6 +104,7 @@
           <p class="label muted-d mt16">11 pertanyaan · gratis · hasil langsung keluar</p>
         </div>
         <div class="verse">
+          <img src="assets/img/logo-full.webp" alt="QOWIY — Aplikasi Kebugaran Muslim" width="150" height="150" style="border-radius:28px;margin:0 0 18px auto;box-shadow:0 10px 30px rgba(0,0,0,.35)">
           <div class="arab">وَكُلُوا وَاشْرَبُوا وَلَا تُسْرِفُوا</div>
           <p class="mt8" style="font-size:17px">“Makan dan minumlah, tetapi jangan berlebih-lebihan.”</p>
           <div class="label muted-d">QS. Al-A'raf [7]: 31</div>
@@ -245,7 +246,7 @@
     app.innerHTML = `<section class="wrap">
       <div class="center" style="padding:50px 0 26px">
         <span class="pill acc">Bayar sekali, akses langsung dibuka setelah verifikasi</span>
-        <h1 class="display mt16" style="font-size:clamp(34px,6vw,64px)">Pilih paketmu</h1>
+        <h1 class="display mt16" style="font-size:clamp(32px,5.5vw,56px)">Mulai perjalanan sehatmu</h1>
         <p class="muted-d" style="max-width:620px;margin:10px auto 0">Program 12–16 pekan, satu fase nyambung ke fase berikutnya. Semua paket berisi materi yang sama-sama berlandaskan Al-Qur'an, Sunnah, dan ilmu gizi & olahraga.</p>
       </div>
       ${cur ? `<div class="card" style="margin-bottom:20px"><span class="label muted">Langganan kamu</span><h3 class="mt8" style="margin-bottom:4px">${esc(cur.plan_name)} · aktif sejak ${fmtDate(cur.activated_at)}</h3><a class="btn sm mt8" href="#/dashboard">Buka Dashboard →</a></div>` : ""}
@@ -262,11 +263,11 @@
         </div>`).join("")}
       </div>
 
-      <div class="section"><div class="section-head"><h2>Program 12 pekan</h2><span class="label muted-d">Satu fase nyambung ke fase berikutnya</span></div>
-        <div class="grid g4">${[["Pekan 1", "Adaptasi", "Atur pola makan sepertiga perut, mulai jalan kaki harian & latihan ringan."], ["Pekan 2–4", "Rutinitas", "Latihan menempel waktu sholat, checklist sunnah jadi kebiasaan."], ["Pekan 5–8", "Progresif", "Beban & langkah naik bertahap. Perut mulai mengecil."], ["Pekan 9–12", "Pemantapan", "Hasil terlihat; transisi ke pola pemeliharaan agar tidak naik lagi."]]
-          .map(([a, b, c]) => `<div class="phase"><span class="label">${a}</span><h4>${b}</h4><p class="muted" style="margin:0;font-size:14.5px">${c}</p></div>`).join("")}</div></div>
+      <div class="section grid g2" style="align-items:start"><div><div class="section-head"><h2>Alur 12 pekan</h2></div><p class="muted-d">Setiap fase membangun kebiasaan untuk fase berikutnya — pelan, terukur, dan istiqamah.</p></div>
+        <div class="timeline">${[["Pekan 1", "Adaptasi", "Atur pola makan sepertiga perut, mulai jalan kaki harian & latihan ringan."], ["Pekan 2–4", "Rutinitas", "Latihan menempel waktu sholat, checklist sunnah jadi kebiasaan."], ["Pekan 5–8", "Progresif", "Beban & langkah naik bertahap. Perut mulai mengecil."], ["Pekan 9–12", "Pemantapan", "Hasil terlihat; transisi ke pola pemeliharaan agar tidak naik lagi."]]
+          .map(([a, b, c]) => `<div class="tl"><div class="dotc"><i></i><s></s></div><div class="phase"><span class="label">${a}</span><h4>${b}</h4><p class="muted" style="margin:0;font-size:14.5px">${c}</p></div></div>`).join("")}</div></div>
 
-      <div class="section"><div class="section-head"><h2>Yang kamu dapat</h2></div>
+      <div class="section"><div class="section-head"><h2>Isi program</h2></div>
         <div class="grid g3">${[["🎬", "Kelas video bertahap", "Peta program jalur Turun Berat atau Bugar & Kuat, plus Ramadan Mode & pecah plateau."], ["🕌", "Rutinitas harian", "Video sesuai waktu Ba'da Subuh, Dhuha, Ba'da Ashar, Ba'da Isya — dipisah ikhwan & akhwat."], ["🎙️", "Motivasi trainer", "Pengingat niat & strategi konsisten dari trainer setiap pekan."], ["✅", "Checklist sunnah", "Pantau sholat Subuh, langkah, porsi makan, puasa sunnah, dan jam tidur."], ["🧮", "Kalkulator kalori", "Hitung angkamu sendiri, bukan angka orang lain."], ["📚", "Artikel bersumber", "Dalil lengkap dengan nomor hadits + jurnal ilmiah, WHO, dan Kemenkes."]]
           .map(([i, t, d]) => `<div class="card"><div style="font-size:26px">${i}</div><h3 style="margin:8px 0 4px;font-size:18px">${t}</h3><p class="muted" style="margin:0;font-size:14.5px">${d}</p></div>`).join("")}</div></div>
 
@@ -296,7 +297,7 @@
           <div class="err" id="aerr"></div>
           <button class="btn acc block">${isUp ? "Daftar & lanjutkan" : "Masuk"}</button>
           <p class="center mt16" style="font-size:14px">${isUp ? `Sudah punya akun? <a href="#/masuk/${esc(planId)}">Masuk</a>` : `Belum punya akun? <a href="#/daftar/${esc(planId)}">Daftar dulu</a> · <a href="#/lupa">Lupa password?</a>`}</p>
-          ${!isUp && Store.mode === "demo" ? `<p class="muted center" style="font-size:12.5px">Demo admin: admin@qawiy.id / admin123</p>` : ""}
+          ${!isUp && Store.mode === "demo" ? `<p class="muted center" style="font-size:12.5px">Demo admin: admin@qowiy.id / admin123</p>` : ""}
         </form>
       </div></section>`;
     $("#authForm").onsubmit = async (e) => {
@@ -419,7 +420,7 @@
     const by = (t) => mods.filter((m) => m.track === t).sort((a, b) => a.sort - b.sort).map((m) => R(m.id)).filter(Boolean);
     const start = by("start"), turun = by("turun"), kuat = by("kuat"), ekstra = by("ekstra");
     let p = "";
-    const line = (x1, y1, x2, y2, dash) => (p += `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${dash ? "#17a361" : "#6b716d"}" stroke-width="1.5" fill="none" ${dash ? 'stroke-dasharray="4 5"' : ""}/>`);
+    const line = (x1, y1, x2, y2, dash) => (p += `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${dash ? "#d4a93c" : "rgba(212,169,60,.45)"}" stroke-width="1.5" fill="none" ${dash ? 'stroke-dasharray="4 5"' : ""}/>`);
     for (let i = 1; i < start.length; i++) line(start[i - 1].r, start[i - 1].cy, start[i].l, start[i].cy);
     [turun, kuat].forEach((row) => { for (let i = 1; i < row.length; i++) line(row[i - 1].r, row[i - 1].cy, row[i].l, row[i].cy); });
     const last = start[start.length - 1];
@@ -471,15 +472,17 @@
 
     app.innerHTML = `<section class="wrap">
       <div class="hero">
-        <div class="top"><span class="label"><span class="dot"></span>&nbsp; Dashboard</span><span class="label">${esc(state.me.email || "")}</span></div>
+        <div class="top"><span class="label">Ruang latihanmu</span><span class="label">${esc(state.me.email || "")}</span></div>
         <div class="hero-grid">
           <div><span class="label">${activeSub ? esc(activeSub.plan_name) + " · aktif" : pending ? "Pembayaran menunggu verifikasi" : "Belum berlangganan"}</span>
             <h1>Assalamu'alaikum, ${esc((state.me.full_name || "Sahabat").split(" ")[0])}.</h1>
             <p style="margin:0;max-width:460px">Progres tersimpan otomatis. Lanjutkan lesson terakhir, kerjakan rutinitas hari ini, dan centang sunnah harianmu.</p></div>
-          <div class="stats">
-            <div class="stat"><b>${doneCount}<em>/${totalLessons}</em></b><span>Lesson selesai</span></div>
-            <div class="stat"><b>${modsDone}<em>/${mods.length}</em></b><span>Modul tuntas</span></div>
-            <div class="stat"><b>${status}</b><span>Status akses</span></div>
+          <div class="row" style="gap:16px;justify-content:flex-end;flex-wrap:wrap">
+            <div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#d4a93c" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(2 * Math.PI * 52).toFixed(1)}" stroke-dashoffset="${((1 - (totalLessons ? doneCount / totalLessons : 0)) * 2 * Math.PI * 52).toFixed(1)}"/></svg><b>${totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0}%</b><small>program</small></div>
+            <div class="stats" style="grid-template-columns:1fr;gap:8px;min-width:190px">
+              <div class="stat"><b>${doneCount}<em> / ${totalLessons}</em></b><span>Lesson selesai · ${modsDone}/${mods.length} modul</span></div>
+              <div class="stat"><b style="font-size:18px">${status === "AKTIF" ? "✓ Aktif" : status === "MENUNGGU" ? "⏳ Menunggu" : "Belum aktif"}</b><span>Status langganan</span></div>
+            </div>
           </div>
         </div>
         ${state.active && next ? `<div class="continue"><div style="flex:1"><span class="label muted">Lanjutkan — ${esc(next.m.tag || next.m.title)}</span><h3 style="margin:4px 0">${esc(next.l.title)}</h3>
@@ -491,7 +494,7 @@
         ${todayRoutines.length ? `<div class="grid g4">${todayRoutines.slice(0, 4).map((v) => videoCard(v, !state.active && !v.is_free)).join("")}</div>` : `<p class="muted-d">Belum ada video rutinitas untuk hari ini.</p>`}
       </div>
 
-      <div class="panel section"><div class="section-head"><h2>Peta program</h2><span class="label muted-d">Pilih jalur — progres tersimpan otomatis · jalurmu: ${myTrack() === "turun" ? "Turun Berat" : "Bugar & Kuat"}</span></div>
+      <div class="panel section"><div class="section-head"><h2>Perjalanan program</h2><span class="label" style="color:var(--gold)">Jalurmu: ${myTrack() === "turun" ? "Turun Berat" : "Bugar & Kuat"} · centang otomatis tersimpan</span></div>
         ${mapHTML(mods, lessons, counts, done)}
       </div>
 
@@ -519,8 +522,8 @@
         <form class="card" id="waForm"><span class="label muted">Kontak kamu</span><h3 style="margin:6px 0">No. WhatsApp</h3>
           <label class="field"><input name="whatsapp" value="${esc(state.me.whatsapp || "")}" placeholder="08xxxxxxxxxx" required></label><button class="btn block ghost">Simpan</button></form>
       </div>
-      <div class="card section row wrap-it" style="background:var(--cream-2)"><div style="flex:1;min-width:240px"><h2 class="display" style="font-size:24px">Macet atau ada pertanyaan?</h2><p class="muted" style="margin:6px 0 0">Chat admin — bantu urus akses, pembayaran, atau program.</p></div>
-        <a class="btn acc" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin " + S.brand + ", saya " + (state.me.full_name || "") + " mau bertanya:")}">Chat Admin</a></div>
+      <div class="card section row wrap-it" style="background:var(--cream-2)"><div style="flex:1;min-width:240px"><h2 class="display" style="font-size:24px">Butuh bantuan?</h2><p class="muted" style="margin:6px 0 0">Tim kami siap membantu soal akses, pembayaran, atau program latihanmu.</p></div>
+        <a class="btn acc" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin " + S.brand + ", saya " + (state.me.full_name || "") + " mau bertanya:")}">Tanya admin via WhatsApp</a></div>
     </section>`;
 
     drawConnectors(mods);
@@ -742,12 +745,12 @@
           <div class="grid g2 mt16" style="gap:10px"><div class="metric"><span class="label muted-d">Massa lemak</span><b>${num(fm, 1)} <small>kg</small></b></div><div class="metric"><span class="label muted-d">Massa bebas lemak</span><b>${num(f.weight - fm, 1)} <small>kg</small></b></div></div>
           <table style="width:100%;font-size:13.5px;margin-top:14px;border-collapse:collapse">${(f.gender === "akhwat" ? [["Lemak esensial", "10–13%"], ["Atlet", "14–20%"], ["Bugar", "21–24%"], ["Rata-rata", "25–31%"], ["Obesitas", "32%+"]] : [["Lemak esensial", "2–5%"], ["Atlet", "6–13%"], ["Bugar", "14–17%"], ["Rata-rata", "18–24%"], ["Obesitas", "25%+"]]).map(([a, b]) => `<tr style="${a === cat ? "background:#e9f6ef;font-weight:700" : ""}"><td style="padding:6px">${a}</td><td style="padding:6px;text-align:right">${b}</td></tr>`).join("")}</table>
           <a class="btn sm mt16" href="#/kalkulator/kalori" id="useBf">Pakai di kalkulator kalori (Katch-McArdle)</a></div>`;
-        $("#useBf").onclick = () => sessionStorage.setItem("qawiy_bf", bf.toFixed(1));
+        $("#useBf").onclick = () => sessionStorage.setItem("qowiy_bf", bf.toFixed(1));
       }
     };
     $("#cf").oninput = calc;
-    const bf = sessionStorage.getItem("qawiy_bf");
-    if (tab === "kalori" && bf) { $("#cf").bodyfat.value = bf; $("#cf").formula.value = "katch"; sessionStorage.removeItem("qawiy_bf"); }
+    const bf = sessionStorage.getItem("qowiy_bf");
+    if (tab === "kalori" && bf) { $("#cf").bodyfat.value = bf; $("#cf").formula.value = "katch"; sessionStorage.removeItem("qowiy_bf"); }
     calc();
   }
 
@@ -827,7 +830,7 @@
     const [, r, p] = (location.hash || "#/").split("/");
     $("#nav").classList.remove("open"); window.onresize = null; window.scrollTo(0, 0);
     app.innerHTML = '<div class="loading">Memuat…</div>';
-    document.title = (S.brand || "QAWIY") + " — Bugar ala Sunnah";
+    document.title = (S.brand || "QOWIY") + " — Aplikasi Kebugaran Muslim";
     renderNav();
     try {
       const routes = {

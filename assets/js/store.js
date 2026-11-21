@@ -5,8 +5,8 @@
    Semua method async dan mengembalikan objek biasa.
    ===================================================================== */
 (function () {
-  const CFG = window.QAWIY_CONFIG || {};
-  const SEED = window.QAWIY_SEED;
+  const CFG = window.QOWIY_CONFIG || {};
+  const SEED = window.QOWIY_SEED;
   const useSupabase = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -23,7 +23,7 @@
     open() {
       if (this.db) return Promise.resolve(this.db);
       return new Promise((res, rej) => {
-        const r = indexedDB.open("qawiy_media", 1);
+        const r = indexedDB.open("qowiy_media", 1);
         r.onupgradeneeded = () => r.result.createObjectStore("files");
         r.onsuccess = () => { this.db = r.result; res(this.db); };
         r.onerror = () => rej(r.error);
@@ -38,7 +38,7 @@
   /* ------------------------------------------------------------------ */
   /* MODE DEMO                                                           */
   /* ------------------------------------------------------------------ */
-  const DKEY = "qawiy_demo_v1", SKEY = "qawiy_demo_session";
+  const DKEY = "qowiy_demo_v1", SKEY = "qowiy_demo_session";
   function demoSeed() {
     const s = clone(SEED);
     return {
@@ -47,7 +47,7 @@
       lessons: s.lessons.map((l) => ({ id: l.key, module_id: l.module, title: l.title, description: l.description, dalil: l.dalil, video_url: l.video_url, storage_path: null, duration: l.duration, sort: l.sort, is_free: !!l.is_free, published: true })),
       videos: s.videos.map((v) => Object.assign({}, v, { id: v.key, published: true, storage_path: null, thumb_url: "" })),
       articles: s.articles.map((a) => Object.assign({}, a, { id: a.key, published: true, created_at: new Date().toISOString() })),
-      users: [{ id: "admin-demo", email: "admin@qawiy.id", password: "admin123", full_name: "Admin QAWIY", role: "admin", whatsapp: "", gender: null, quiz: null, created_at: new Date().toISOString() }],
+      users: [{ id: "admin-demo", email: "admin@qowiy.id", password: "admin123", full_name: "Admin QOWIY", role: "admin", whatsapp: "", gender: null, quiz: null, created_at: new Date().toISOString() }],
       subscriptions: [], progress: [], habits: {}, quiz_leads: []
     };
   }

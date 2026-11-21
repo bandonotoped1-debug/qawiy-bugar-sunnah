@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QAWIY — Bugar ala Sunnah</title>
+  <title>QOWIY — Aplikasi Kebugaran Muslim</title>
   <meta name="description" content="Program kebugaran & gaya hidup sehat untuk Muslim dan Muslimah sesuai Al-Qur'an dan Sunnah, dengan artikel kesehatan bersumber ilmiah." />
-  <meta name="theme-color" content="#151917" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2317a361'/%3E%3Ctext x='32' y='44' font-family='Arial Black' font-size='34' text-anchor='middle' fill='%23072b1a'%3EQ%3C/text%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#0a2219" />
+  <meta property="og:image" content="assets/img/logo-full.webp" />
+  <link rel="icon" type="image/png" href="assets/img/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
   <div id="demoBanner" class="demo-banner hidden">Mode demo — data tersimpan di browser ini saja. Hubungkan Supabase di <code>assets/js/config.js</code> agar online.</div>
   <header class="topbar">
     <div class="wrap">
-      <a class="brand" href="#/"><span class="brand-mark">Q</span><span class="brand-name" id="brandName">QAWIY</span></a>
+      <a class="brand" href="#/"><img class="brand-logo" src="assets/img/logo-mark.png" alt="" width="40" height="40"><span><span class="brand-name" id="brandName">QOWIY</span><span class="brand-sub">Kebugaran Muslim</span></span></a>
       <button class="burger" id="burger" aria-label="Menu">☰</button>
       <nav class="nav" id="nav"></nav>
     </div>
@@ -25,8 +27,8 @@
     <div class="wrap">
       <div class="row wrap-it">
         <div>
-          <div class="brand-name" id="footBrand">QAWIY</div>
-          <div class="label muted-d mt8" id="footTag">Bugar ala Sunnah</div>
+          <div class="row"><img src="assets/img/logo-mark.png" alt="" width="44" height="44" style="border-radius:12px"><div class="brand-name" id="footBrand">QOWIY</div></div>
+          <div class="label muted-d mt8" id="footTag">Aplikasi Kebugaran Muslim</div>
         </div>
         <div class="spacer"></div>
         <nav class="nav" style="display:flex;position:static;flex-direction:row;padding:0;background:none;border:0;flex-wrap:wrap">
@@ -35,7 +37,7 @@
       </div>
       <div class="bottom">
         Konten edukasi, bukan pengganti nasihat dokter. Konsultasikan dengan tenaga kesehatan bila memiliki kondisi medis, sedang hamil/menyusui, atau sebelum memulai program berat.<br />
-        © <span id="year"></span> <span id="footBrand2">QAWIY</span> — All rights reserved.
+        © <span id="year"></span> <span id="footBrand2">QOWIY</span> — All rights reserved.
       </div>
     </div>
   </footer>

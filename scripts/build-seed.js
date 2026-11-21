@@ -7,10 +7,10 @@ const crypto = require("crypto");
 const src = fs.readFileSync(path.join(__dirname, "../assets/js/seed.js"), "utf8");
 const window = {};
 new Function("window", src)(window);
-const S = window.QAWIY_SEED;
+const S = window.QOWIY_SEED;
 
 const uuid = (key) => {
-  const h = crypto.createHash("md5").update("qawiy:" + key).digest("hex");
+  const h = crypto.createHash("md5").update("qowiy:" + key).digest("hex");
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
 };
 const q = (v) => (v === null || v === undefined || v === "" ? "null" : "'" + String(v).replace(/'/g, "''") + "'");
@@ -18,7 +18,7 @@ const j = (v) => "'" + JSON.stringify(v).replace(/'/g, "''") + "'::jsonb";
 const b = (v) => (v ? "true" : "false");
 const arr = (a) => (a && a.length ? `'{${a.join(",")}}'::int[]` : "null");
 
-let out = `-- Konten awal QAWIY (dibuat otomatis dari assets/js/seed.js)\n-- Jalankan SETELAH schema.sql. Aman diulang (on conflict do update).\n\n`;
+let out = `-- Konten awal QOWIY (dibuat otomatis dari assets/js/seed.js)\n-- Jalankan SETELAH schema.sql. Aman diulang (on conflict do update).\n\n`;
 
 out += `insert into public.settings (id, data) values (1, ${j(S.settings)})\n  on conflict (id) do update set data = excluded.data;\n\n`;
 

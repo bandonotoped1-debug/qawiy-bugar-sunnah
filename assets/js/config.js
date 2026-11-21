@@ -7,7 +7,7 @@
    Jika dibiarkan kosong, aplikasi berjalan dalam MODE DEMO (data disimpan
    di browser masing-masing pengunjung, tidak online).
    ===================================================================== */
-window.QAWIY_CONFIG = {
+window.QOWIY_CONFIG = {
   SUPABASE_URL: "",
   SUPABASE_ANON_KEY: "",
   // Bucket penyimpanan video (lihat schema.sql)

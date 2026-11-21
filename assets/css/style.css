@@ -1,31 +1,34 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Amiri:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap");
 
+/* Tema QOWIY — hijau zamrud & emas dari logo, motif bintang delapan */
 :root {
-  --page: #2c312e;
-  --ink: #151917;
-  --ink-2: #212623;
-  --ink-3: #2f3531;
-  --cream: #f2efe7;
-  --cream-2: #e6e2d6;
-  --line: #d6d1c3;
-  --acc: #17a361;
-  --acc-2: #0f7c49;
-  --acc-ink: #072b1a;
-  --gold: #e3b04b;
-  --red: #d9534f;
-  --muted: #6f746f;
-  --muted-d: #a6aca7;
-  --r: 18px;
+  --page: #0b231a;
+  --ink: #071a12;
+  --ink-2: #0f2d21;
+  --ink-3: #1d4434;
+  --cream: #f7f2e6;
+  --cream-2: #ece4cf;
+  --line: #dccfae;
+  --acc: #d4a93c;
+  --acc-2: #8a6a17;
+  --acc-ink: #2b2006;
+  --em: #0f5a40;
+  --em-2: #0a4330;
+  --gold: #e8c766;
+  --red: #c8473f;
+  --muted: #6b6f63;
+  --muted-d: #a9bcb1;
+  --r: 20px;
   --r-sm: 12px;
-  --shadow: 0 6px 0 rgba(0, 0, 0, .35);
-  --display: "Archivo Black", "Arial Black", system-ui, sans-serif;
-  --mono: "Space Mono", ui-monospace, monospace;
+  --display: "Montserrat", "Segoe UI", system-ui, sans-serif;
+  --mono: "Montserrat", "Segoe UI", system-ui, sans-serif;
   --body: "Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+  --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cpath d='M36 22l4.1 9.9L50 36l-9.9 4.1L36 50l-4.1-9.9L22 36l9.9-4.1z M26.1 26.1h19.8v19.8H26.1z' fill='none' stroke='%23d4a93c' stroke-opacity='.07' stroke-width='1.2' transform='rotate(0 36 36)'/%3E%3Cpath d='M36 22l14 14-14 14-14-14z' fill='none' stroke='%23d4a93c' stroke-opacity='.07' stroke-width='1.2'/%3E%3C/svg%3E");
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--page); color: var(--cream); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body { background: var(--page) var(--star); background-attachment: fixed; color: var(--cream); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
 img, video, iframe { max-width: 100%; display: block; }
 a { color: inherit; }
 button { font: inherit; cursor: pointer; }
@@ -260,3 +263,83 @@ input, select, textarea { font: inherit; color: inherit; }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; display: grid; place-items: center; padding: 16px; }
 .modal { background: var(--cream); color: var(--ink); border-radius: 20px; padding: 26px; width: min(560px, 100%); max-height: 90vh; overflow: auto; }
 .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+
+/* =================== Tema QOWIY (pembeda tampilan) =================== */
+.display, .section-head h2, .hero h1, .node h4, .qtitle, .plan h3, .result-hero h1, .article h1, .landing-hero h1, .brand-name { text-transform: none; font-weight: 800; letter-spacing: -.02em; }
+.label, .nav a, .pill, .slot-tabs button, .stat span, .node .meta, .lesson-side .mod, .field > span, .week div { font-family: var(--display); text-transform: none; letter-spacing: .04em; font-weight: 600; }
+.label { font-size: 12px; }
+.nav a { font-size: 14px; letter-spacing: 0; }
+.nav a:hover, .nav a.active { color: var(--gold); }
+.topbar { background: rgba(7, 26, 18, .92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(212,169,60,.25); }
+.brand-logo { width: 40px; height: 40px; border-radius: 11px; box-shadow: 0 0 0 1px rgba(212,169,60,.45); }
+.brand-name { font-family: var(--display); font-size: 19px; color: #fff; display: block; line-height: 1; }
+.brand-sub { display: block; font-size: 11px; color: var(--gold); letter-spacing: .06em; margin-top: 3px; font-weight: 600; }
+.footer { background: var(--ink); border-top: 1px solid rgba(212,169,60,.25); }
+
+.btn { box-shadow: none; border-radius: 999px; padding: 13px 22px; }
+.btn:active { transform: translateY(1px); box-shadow: none; }
+.btn.acc { background: linear-gradient(180deg, #e2bb52, #c79a2e); border-color: #c79a2e; color: var(--acc-ink); }
+.btn.acc:hover { filter: brightness(1.05); }
+.btn.sm { border-radius: 999px; }
+.pill.acc { background: var(--acc); color: var(--acc-ink); }
+.pill.gold { background: var(--em); color: #fff; }
+.bar > i { background: linear-gradient(90deg, var(--em), var(--acc)); }
+.opt.on { border-color: var(--em); background: #eef5ef; box-shadow: inset 0 0 0 1px var(--em); }
+.habit input:checked + .box { background: var(--em); border-color: var(--em); }
+.habit .box { border-radius: 50%; }
+.week i b { background: var(--em); }
+.tick.ok { background: var(--em); border-color: var(--em); }
+.dalil { background: #eef5ef; border-left-color: var(--em); }
+.dalil a, .src a { color: var(--em); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--em); box-shadow: 0 0 0 3px rgba(15,90,64,.18); }
+.card { border-radius: 22px; }
+.slot-tabs button { border-radius: 999px; font-size: 13px; }
+.slot-tabs button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+
+/* hero dashboard: zamrud bergradasi + garis emas, bukan blok warna polos */
+.hero, .result-hero { background: radial-gradient(120% 140% at 100% 0%, #14714f 0%, #0c4c35 45%, #08331f 100%); color: var(--cream); border: 1px solid rgba(212,169,60,.45); box-shadow: inset 0 0 0 6px rgba(212,169,60,.06); }
+.hero::after { border: 0; width: 340px; height: 340px; right: -90px; top: -90px; background: url("../img/logo-mark.png") center/cover; opacity: .09; border-radius: 50%; }
+.hero h1, .result-hero h1 { color: #fff; font-size: clamp(30px, 5vw, 50px); }
+.hero .label, .result-hero .label { color: var(--gold); }
+.hero p, .result-hero p { color: #d7e6dc; }
+.result-hero b { color: #fff; }
+.stat { background: rgba(4, 20, 13, .55); border: 1px solid rgba(212,169,60,.25); border-radius: 16px; }
+.stat b em { color: var(--gold); }
+.continue { border: 0; border-left: 6px solid var(--acc); box-shadow: 0 14px 30px rgba(0,0,0,.25); border-radius: 16px; }
+.ring { width: 118px; height: 118px; flex: none; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: 24px; color: #fff; }
+.ring small { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; font-size: 10px; color: var(--gold); font-weight: 600; }
+
+/* perjalanan program: kartu bertopi emas, tanpa garis bawah */
+.panel { background: linear-gradient(180deg, var(--ink-2), var(--ink)); border: 1px solid rgba(212,169,60,.2); }
+.node { border-radius: 16px; border: 1px solid transparent; border-top: 4px solid var(--acc); padding-top: 12px; }
+.node h4 { text-decoration: none; font-size: 15px; }
+.node p { text-decoration: none; }
+.node.dark { background: var(--em); border-color: var(--em); border-top-color: var(--gold); color: #fff; }
+.node.dark p { color: var(--gold); font-family: var(--body); font-size: 12.5px; letter-spacing: 0; text-transform: none; }
+.node.hot { background: var(--acc); color: var(--acc-ink); border-top-color: var(--em); }
+.node.hot p { color: var(--acc-ink); }
+.node.gold { background: var(--cream-2); border-top-color: var(--em); }
+.node.done { box-shadow: inset 0 0 0 2px var(--em); }
+.vcard { border-radius: 18px; border-color: rgba(212,169,60,.2); }
+.vthumb { background: radial-gradient(circle at 30% 20%, #1a6e4f, #08261b); }
+.vthumb .play { background: var(--acc); }
+.vthumb .play::before { border-left-color: var(--acc-ink); }
+.plan.featured { border-color: var(--acc); box-shadow: 0 18px 40px rgba(212,169,60,.22); }
+.plan { border-radius: 24px; }
+.plan li::before { color: var(--em); }
+.metric { background: rgba(4, 20, 13, .6); border: 1px solid rgba(212,169,60,.22); }
+.card .metric { background: var(--ink-2); }
+.verse { background: linear-gradient(180deg, var(--ink-2), var(--ink)); border-color: rgba(212,169,60,.3); }
+.landing-hero h1 em { color: var(--gold); }
+.lockwall { border-color: var(--acc); border-radius: 24px; }
+.demo-banner { background: var(--acc); }
+.timeline { display: grid; gap: 0; }
+.timeline .tl { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
+.timeline .tl .dotc { width: 34px; display: flex; flex-direction: column; align-items: center; }
+.timeline .tl .dotc i { width: 16px; height: 16px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 5px rgba(212,169,60,.2); margin-top: 22px; }
+.timeline .tl .dotc s { flex: 1; width: 2px; background: rgba(212,169,60,.35); }
+.timeline .tl:last-child .dotc s { display: none; }
+.timeline .phase { margin-bottom: 14px; }

@@ -1,5 +1,5 @@
 /* =====================================================================
-   QAWIY — Panel Admin
+   QOWIY — Panel Admin
    Upload video rutinitas & motivasi, kelola kelas, artikel, member,
    langganan, lead kuis, dan pengaturan situs.
    ===================================================================== */
@@ -22,7 +22,7 @@
       <label class="field"><span>Email</span><input name="email" type="email" required></label>
       <label class="field"><span>Password</span><input name="password" type="password" required></label>
       <div class="err" id="lerr"></div><button class="btn acc block">Masuk</button>
-      ${Store.mode === "demo" ? `<p class="muted center" style="font-size:13px">Demo: admin@qawiy.id / admin123</p>` : ""}
+      ${Store.mode === "demo" ? `<p class="muted center" style="font-size:13px">Demo: admin@qowiy.id / admin123</p>` : ""}
     </form></section>`;
     $("#lf").onsubmit = async (e) => {
       e.preventDefault();
