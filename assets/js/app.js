@@ -2,7 +2,7 @@
    QOWIY — aplikasi member (SPA berbasis hash route)
    ===================================================================== */
 (async function () {
-  const { esc, rp, $, $$, md, toast, playerHTML, waLink, SLOTS, DAYS, fmtDate } = UI;
+  const { esc, rp, $, $$, md, toast, playerHTML, waLink, SLOTS, DAYS, fmtDate, icon } = UI;
   await Store.init();
   const app = $("#app");
   let S = await Store.settings();
@@ -13,6 +13,7 @@
   function applyBrand() {
     ["#brandName", "#footBrand", "#footBrand2"].forEach((s) => ($(s).textContent = S.brand || "QOWIY"));
     $("#footTag").textContent = S.tagline || "";
+    $("#footWa").href = waLink(S.whatsapp, "Assalamu'alaikum admin " + (S.brand || "QOWIY") + ", saya mau bertanya tentang programnya.");
     document.title = (S.brand || "QOWIY") + " — Aplikasi Kebugaran Muslim";
   }
   applyBrand();
@@ -91,39 +92,94 @@
 
   function viewLanding() {
     const q = quiz();
+    const DAY = [
+      ["sunrise", "Subuh", "Bangun sebelum adzan, sholat, lalu peregangan 10 menit."],
+      ["walk", "Dhuha", "Jalan cepat 20–30 menit sambil dzikir pagi."],
+      ["bowl", "Dzuhur", "Makan siang sepertiga perut — separuh piring sayur & buah."],
+      ["dumbbell", "Ashar", "Latihan beban 25–30 menit sesuai pola pekananmu."],
+      ["date", "Maghrib", "Makan malam secukupnya, tanpa minuman manis."],
+      ["moon", "Isya", "Relaksasi 8 menit, wudhu, tidur sebelum pukul 22.00."]
+    ];
+    const FACTS = [
+      ["150–300", "menit aktivitas sedang per pekan untuk orang dewasa", "WHO, 2020"],
+      ["⅓", "perut untuk makanan, ⅓ minuman, ⅓ napas", "HR. Tirmidzi no. 2380"],
+      ["≤ 50 g", "gula per orang per hari", "Kemenkes RI"],
+      ["7+ jam", "tidur malam secara teratur", "AASM & SRS, 2015"]
+    ];
+    const FEAT = [
+      ["play", "Kelas video bertahap", "Jalur Turun Berat atau Bugar & Kuat, lengkap dengan Ramadan Mode dan strategi pecah plateau."],
+      ["users", "Ikhwan & akhwat terpisah", "Video rutinitas dan trainer menyesuaikan — akhwat bisa berlatih di rumah dengan pakaian syar'i."],
+      ["bowl", "Rencana makan dari angkamu", "Menu 7 hari + menu sahur-berbuka, takaran rumah tangga ala Kemenkes."],
+      ["check", "Checklist sunnah harian", "Subuh tepat waktu, langkah harian, porsi, puasa sunnah, jam tidur — tercatat otomatis."],
+      ["book", "Artikel yang bisa dicek", "Ayat & hadits dengan nomor riwayat, jurnal ilmiah, WHO, dan Kemenkes."],
+      ["calc", "Kalkulator kesehatan", "Kalori, BMR, IMT, dan lemak tubuh — gratis tanpa login."]
+    ];
     app.innerHTML = `
       <section class="wrap landing-hero">
         <div>
           <span class="pill acc">Program 12–16 pekan · Muslim & Muslimah</span>
           <h1>${esc(S.hero_title || "Badan kuat, ibadah makin semangat.").replace(/kuat/i, "<em>kuat</em>")}</h1>
-          <p style="font-size:18px;max-width:560px" class="muted-d">${esc(S.hero_sub || "")}</p>
+          <p class="lead">${esc(S.hero_sub || "")}</p>
           <div class="row wrap-it mt24">
-            <a class="btn acc" href="#/kuis">${q.done ? "Ulangi Tes Kebugaran" : "Mulai Tes Kebugaran — 2 menit"} →</a>
+            <a class="btn acc" href="#/kuis">${q.done ? "Ulangi tes kebugaran" : "Mulai tes kebugaran — 2 menit"} →</a>
             ${q.done ? '<a class="btn ghost" href="#/hasil">Lihat hasil tesku</a>' : '<a class="btn ghost" href="#/langganan">Lihat paket</a>'}
           </div>
-          <p class="label muted-d mt16">11 pertanyaan · gratis · hasil langsung keluar</p>
+          <p class="hint mt16">11 pertanyaan singkat · gratis · langsung dapat rencana makan hari pertama</p>
         </div>
-        <div class="verse">
-          <img src="assets/img/logo-full.webp" alt="QOWIY — Aplikasi Kebugaran Muslim" width="150" height="150" style="border-radius:28px;margin:0 0 18px auto;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+        <figure class="emblem">
+          <img src="assets/img/logo-full.webp" alt="QOWIY — Aplikasi Kebugaran Muslim" width="168" height="168">
           <div class="arab">وَكُلُوا وَاشْرَبُوا وَلَا تُسْرِفُوا</div>
-          <p class="mt8" style="font-size:17px">“Makan dan minumlah, tetapi jangan berlebih-lebihan.”</p>
-          <div class="label muted-d">QS. Al-A'raf [7]: 31</div>
-          <hr style="border:0;border-top:1px solid var(--ink-3);margin:20px 0">
-          <p style="margin:0;font-size:16px">“Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.”</p>
-          <div class="label muted-d mt8">HR. Muslim no. 2664</div>
+          <blockquote>“Makan dan minumlah, tetapi jangan berlebih-lebihan.”</blockquote>
+          <figcaption>QS. Al-A'raf [7]: 31</figcaption>
+          <span class="divider"><i></i></span>
+          <blockquote class="sm">“Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.”</blockquote>
+          <figcaption>HR. Muslim no. 2664</figcaption>
+        </figure>
+      </section>
+
+      <section class="band cream">
+        <div class="wrap">
+          <div class="band-head"><h2>Sehari yang tertata, mengikuti adzan</h2><p>Tidak perlu jam khusus untuk olahraga. Waktu sholat sudah menjadi pengingat alami — kami tinggal mengisinya dengan kebiasaan sehat.</p></div>
+          <ol class="dayline">${DAY.map(([ic, t, d]) => `<li><span class="node-ic">${icon(ic, 24)}</span><b>${t}</b><p>${d}</p></li>`).join("")}</ol>
         </div>
       </section>
-      <section class="wrap section">
-        <div class="grid g3">
-          ${[["🕌", "Latihan menempel waktu sholat", "Peregangan Ba'da Subuh, jalan cepat di waktu Dhuha, latihan beban Ba'da Ashar. Sholat jadi alarm untuk bergerak."],
-             ["🥣", "Sepertiga perut, bukan diet ekstrem", "Porsi ala sunnah dipadukan Isi Piringku Kemenkes dan kalkulator kalori yang menghitung angkamu sendiri."],
-             ["📚", "Dalil jelas, sumber ilmiah jelas", "Setiap artikel mencantumkan ayat & hadits beserta nomor riwayatnya, plus jurnal/WHO/Kemenkes yang bisa kamu cek."]]
-            .map(([i, t, d]) => `<div class="card"><div style="font-size:30px">${i}</div><h3 style="margin:10px 0 6px">${t}</h3><p class="muted" style="margin:0">${d}</p></div>`).join("")}
+
+      <section class="wrap facts">
+        <div class="facts-head"><span class="kicker">Pegangan kami</span><h2>Dalil dan data, bukan kira-kira.</h2><p class="muted-d">Setiap anjuran di dalam program punya rujukan yang bisa kamu periksa sendiri.</p><a class="link-gold" href="#/artikel">Baca artikel kesehatan →</a></div>
+        <div class="facts-grid">${FACTS.map(([n, t, src]) => `<div class="fact"><b>${n}</b><span>${t}</span><small>${src}</small></div>`).join("")}</div>
+      </section>
+
+      <section class="wrap split">
+        <form class="bmi-mini" id="bmiMini" onsubmit="return false">
+          <span class="kicker dark">Cek cepat</span>
+          <h3>Berapa IMT-mu?</h3>
+          <div class="grid g2" style="gap:10px"><label class="field"><span>Tinggi (cm)</span><input name="h" type="number" inputmode="numeric" value="${esc(q.height || 165)}"></label><label class="field"><span>Berat (kg)</span><input name="w" type="number" inputmode="decimal" value="${esc(q.weight || 65)}"></label></div>
+          <div class="bmi-out" id="bmiOut"></div>
+          <a class="btn block mt16" href="#/kalkulator/kalori">Hitung kebutuhan kalori lengkap →</a>
+        </form>
+        <div class="feat">
+          <span class="kicker">Isi program</span>
+          <h2>Semua yang kamu butuhkan dalam satu aplikasi.</h2>
+          <ul>${FEAT.map(([ic, t, d]) => `<li><span class="feat-ic">${icon(ic, 22)}</span><div><b>${t}</b><p>${d}</p></div></li>`).join("")}</ul>
         </div>
       </section>
-      <section class="wrap section center">
-        <a class="btn acc" href="#/kuis">Cari tahu programmu sekarang →</a>
+
+      <section class="wrap">
+        <div class="cta-band">
+          <img src="assets/img/logo-mark.png" alt="" width="84" height="84">
+          <div><h2>Mulai dari tes 2 menit.</h2><p>Jawab 11 pertanyaan, dapatkan jalur program, target kalori, dan rencana makan hari pertama — gratis.</p></div>
+          <a class="btn acc" href="#/kuis">Mulai sekarang →</a>
+        </div>
       </section>`;
+    const calc = () => {
+      const f = $("#bmiMini"), h = +f.h.value, w = +f.w.value;
+      if (!(h > 100 && w > 25)) { $("#bmiOut").innerHTML = '<p class="muted">Isi tinggi & berat.</p>'; return; }
+      const v = Health.bmi(h, w), c = Health.bmiCat(v), iw = Health.idealWeight(h);
+      const pos = Math.max(0, Math.min(100, ((v - 15) / 20) * 100));
+      $("#bmiOut").innerHTML = `<div class="row" style="align-items:baseline;gap:12px"><b class="bmi-num" style="color:${c.c}">${v.toFixed(1).replace(".", ",")}</b><span><b>${c.t}</b><br><span class="muted" style="font-size:13.5px">Rentang sehat: ${iw.min.toFixed(1).replace(".", ",")}–${iw.max.toFixed(1).replace(".", ",")} kg</span></span></div>
+        <div class="bmi-bar"><i style="left:${pos}%"></i></div><div class="row" style="justify-content:space-between;font-size:11px" class="muted"><span>15</span><span>18,5</span><span>25</span><span>27</span><span>35</span></div>`;
+    };
+    $("#bmiMini").oninput = calc; calc();
   }
 
   function viewQuiz(step) {
