@@ -37,7 +37,9 @@ Catatan: paket gratis Supabase membatasi ukuran file upload 50 MB. Untuk video p
 - File video disimpan di bucket privat `media` dan diputar lewat *signed URL* berumur 3 jam.
 
 ## Deploy
-Situs statis — tanpa build. Di Vercel: *Import Git Repository* → Framework: **Other** → Deploy.
+Situs statis — tanpa build. Di Vercel: *Import Git Repository* → Framework: **Other** → Deploy. Setiap push ke branch `main` otomatis di-deploy ulang.
+
+Produksi: https://qowiy.vercel.app
 
 ## Rujukan utama konten
 WHO Guidelines on Physical Activity 2020 · Kemenkes RI (G4 G1 L5, Pedoman Gizi Seimbang) · Fernando dkk., *Nutrients* 2019 (puasa Ramadan) · Paluch dkk., *Lancet Public Health* 2022 (langkah harian) · Morton dkk., *BJSM* 2018 (protein) · Watson dkk., *Sleep* 2015 (durasi tidur) · Andrade dkk., *J Am Diet Assoc* 2008 (makan perlahan) · Mifflin dkk., *AJCN* 1990 (BMR). Hadits dirujuk dengan nomor riwayat ke sunnah.com.
