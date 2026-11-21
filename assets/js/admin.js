@@ -22,7 +22,7 @@
       <label class="field"><span>Email</span><input name="email" type="email" required></label>
       <label class="field"><span>Password</span><input name="password" type="password" required></label>
       <div class="err" id="lerr"></div><button class="btn acc block">Masuk</button>
-      ${Store.mode === "demo" ? `<p class="muted center" style="font-size:13px">Demo: admin@qowiy.id / admin123</p>` : ""}
+      ${Store.mode === "demo" ? `<p class="muted center" style="font-size:13px">Demo: admin@qowiy.id / admin123</p>` : `<p class="muted center" style="font-size:13px">Belum punya akun admin? <a href="index.html#/daftar">Daftar di aplikasi</a> memakai email yang terdaftar sebagai admin, konfirmasi email, lalu masuk di sini.</p>`}
     </form></section>`;
     $("#lf").onsubmit = async (e) => {
       e.preventDefault();
