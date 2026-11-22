@@ -197,12 +197,6 @@
         </div>
       </section>
 
-      <section class="wrap coach-band">
-        <div><span class="kicker">Untuk pelatih</span><h2>Dampingi umat menjadi mukmin yang kuat.</h2>
-          <p class="muted-d">Susun materi latihan sendiri, pantau progres ibadah dan kebugaran member binaanmu, dan dapatkan bagi hasil dari setiap program yang mereka beli.</p></div>
-        <a class="btn" href="#/daftar-pelatih">Daftar khusus pelatih →</a>
-      </section>
-
       <section class="wrap">
         <div class="cta-band">
           <img src="assets/img/logo-mark.png" alt="" width="84" height="84">
@@ -391,27 +385,47 @@
       </div></section>`;
   }
 
+  /* Pelatih yang belum disetujui: tampilkan status & arahkan ke pendaftaran */
+  async function coachNotYet() {
+    const a = await Store.myApplication().catch(() => null);
+    const st = a && { pending: "sedang diseleksi admin", approved: "sudah disetujui — keluar lalu masuk lagi", rejected: "belum lolos seleksi" }[a.status];
+    app.innerHTML = `<section class="wrap quiz"><div class="card center"><span class="label muted">Panel pelatih</span><h2 class="mt8">Akun ini belum terdaftar sebagai pelatih</h2>
+      <p class="muted">${a ? `Status pendaftaran pelatihmu: <b>${esc(st)}</b>${a.admin_note ? `<br>Catatan admin: ${esc(a.admin_note)}` : ""}` : `Akun <b>${esc(state.me.email)}</b> masih berstatus member. Untuk menjadi pelatih, kirim pendaftaran dan CV terlebih dahulu.`}</p>
+      <div class="row wrap-it" style="justify-content:center">${!a || a.status === "rejected" ? `<a class="btn acc" href="#/daftar-pelatih">Daftar khusus pelatih →</a>` : ""}<a class="btn ghost" href="#/dashboard">Ke dashboard</a></div></div></section>`;
+  }
+  const goCoachPanel = () => { location.href = "pelatih.html"; };
+
   function viewAuth(kind, param) {
-    const q = quiz(); const planId = param || "";
+    const q = quiz(); const asCoach = param === "pelatih"; const planId = asCoach ? "" : param || "";
     const isUp = kind === "daftar";
-    app.innerHTML = `<section class="wrap" style="max-width:980px">
-      <div class="grid g2 mt40" style="align-items:start">
-        <div>
-          <span class="label muted-d">${isUp ? "Daftar akun" : "Masuk"}</span>
+    const seg = `<div class="auth-seg"><a href="#/${kind}" class="${asCoach ? "" : "on"}">Member</a><a href="#/${kind}/pelatih" class="${asCoach ? "on" : ""}">Pelatih</a></div>`;
+    const side = asCoach
+      ? `<span class="label muted-d">${isUp ? "Akun pelatih" : "Masuk pelatih"}</span>
+          <h1 class="display mt8" style="font-size:clamp(30px,5vw,48px)">${isUp ? "Aktifkan akun pelatihmu." : "Masuk ke Panel Pelatih."}</h1>
+          <ul class="muted-d" style="line-height:2"><li>Pantau checklist sunnah & progres member binaan</li><li>Susun materi video dan dokumen</li><li>Lihat kode referral & penghasilanmu</li></ul>
+          <div class="coach-join mt16"><b>Belum jadi pelatih?</b><p>Kirim data & CV, admin akan menyeleksi dan menghubungimu lewat WhatsApp.</p><a class="btn acc sm" href="#/daftar-pelatih">Daftar khusus pelatih →</a></div>`
+      : `<span class="label muted-d">${isUp ? "Daftar akun" : "Masuk"}</span>
           <h1 class="display mt8" style="font-size:clamp(30px,5vw,48px)">${isUp ? "Satu akun untuk seluruh program." : "Masuk dulu, lanjut ke program."}</h1>
           <ul class="muted-d" style="line-height:2">
             <li>Semua kelas terbuka setelah langganan aktif</li><li>Progres & checklist sunnah tersimpan otomatis</li><li>Hasil tes kebugaranmu langsung terhubung</li></ul>
-        </div>
+          <p class="muted-d" style="font-size:14px">Ingin menjadi pelatih? <a class="link-gold" href="#/${kind}/pelatih">Masuk / daftar sebagai pelatih →</a></p>`;
+    const qv = asCoach ? {} : q;
+    app.innerHTML = `<section class="wrap" style="max-width:980px">
+      <div class="grid g2 mt40" style="align-items:start">
+        <div>${side}</div>
         <form class="card" id="authForm">
-          ${isUp ? `<label class="field"><span>Nama lengkap</span><input name="full_name" required value="${esc(q.name || "")}"></label>
-          <label class="field"><span>No. WhatsApp</span><input name="whatsapp" required value="${esc(q.whatsapp || "")}"></label>
-          <label class="field"><span>Ikhwan / Akhwat</span><select name="gender"><option value="ikhwan" ${q.gender === "ikhwan" ? "selected" : ""}>Ikhwan</option><option value="akhwat" ${q.gender === "akhwat" ? "selected" : ""}>Akhwat</option></select></label>` : ""}
-          <label class="field"><span>Email</span><input name="email" type="email" required value="${esc(isUp ? q.email || "" : "")}"></label>
+          ${seg}
+          ${asCoach && isUp ? `<div class="notice" style="margin-bottom:14px">Gunakan <b>email yang sama</b> dengan formulir pendaftaran pelatih. Setelah admin menyetujui, akun ini otomatis menjadi akun pelatih.</div>` : ""}
+          ${isUp ? `<label class="field"><span>Nama lengkap</span><input name="full_name" required value="${esc(qv.name || "")}"></label>
+          <label class="field"><span>No. WhatsApp</span><input name="whatsapp" required value="${esc(qv.whatsapp || "")}"></label>
+          <label class="field"><span>${asCoach ? "Kategori pelatih" : "Ikhwan / Akhwat"}</span><select name="gender"><option value="ikhwan" ${qv.gender === "ikhwan" ? "selected" : ""}>Ikhwan</option><option value="akhwat" ${qv.gender === "akhwat" ? "selected" : ""}>Akhwat</option></select></label>` : ""}
+          <label class="field"><span>Email</span><input name="email" type="email" required value="${esc(isUp ? qv.email || "" : "")}"></label>
           <label class="field"><span>Password</span><input name="password" type="password" required minlength="6"></label>
           <div class="err" id="aerr"></div>
-          <button class="btn acc block">${isUp ? "Daftar & lanjutkan" : "Masuk"}</button>
-          <p class="center mt16" style="font-size:14px">${isUp ? `Sudah punya akun? <a href="#/masuk/${esc(planId)}">Masuk</a>` : `Belum punya akun? <a href="#/daftar/${esc(planId)}">Daftar dulu</a> · <a href="#/lupa">Lupa password?</a>`}</p>
-          ${isUp && Store.ref.get() ? `<p class="center muted" style="font-size:13px">Kode undangan pelatih: <b>${esc(Store.ref.get())}</b></p>` : ""}
+          <button class="btn acc block">${isUp ? (asCoach ? "Buat akun pelatih" : "Daftar & lanjutkan") : asCoach ? "Masuk ke Panel Pelatih" : "Masuk"}</button>
+          <p class="center mt16" style="font-size:14px">${isUp ? `Sudah punya akun? <a href="#/masuk/${esc(asCoach ? "pelatih" : planId)}">Masuk</a>` : `Belum punya akun? <a href="#/daftar/${esc(asCoach ? "pelatih" : planId)}">${asCoach ? "Buat akun pelatih" : "Daftar dulu"}</a> · <a href="#/lupa">Lupa password?</a>`}</p>
+          ${asCoach && !isUp ? `<p class="center" style="font-size:14px;margin-top:-6px"><a href="#/daftar-pelatih">Belum mendaftar sebagai pelatih? Kirim CV →</a></p>` : ""}
+          ${isUp && !asCoach && Store.ref.get() ? `<p class="center muted" style="font-size:13px">Kode undangan pelatih: <b>${esc(Store.ref.get())}</b></p>` : ""}
           ${!isUp && Store.mode === "demo" ? `<p class="muted center" style="font-size:12.5px">Demo admin: admin@qowiy.id / admin123 · Demo pelatih: coach@qowiy.id / coach123</p>` : ""}
         </form>
       </div></section>`;
@@ -419,10 +433,12 @@
       e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)); const btn = e.target.querySelector("button"); btn.disabled = true; $("#aerr").textContent = "";
       try {
         if (isUp) {
-          const r = await Store.signUp(Object.assign(f, { quiz: q.done ? q : null, coach_id: q.coach_id || null, ref: Store.ref.get() || null }));
-          if (r.needsConfirm) { app.innerHTML = `<section class="wrap quiz"><div class="card center"><div style="font-size:40px">📩</div><h2>Cek email kamu</h2><p class="muted">Kami mengirim link konfirmasi ke <b>${esc(f.email)}</b>. Klik link tersebut, lalu masuk untuk melanjutkan pembayaran.</p><a class="btn mt16" href="#/masuk/${esc(planId)}">Ke halaman masuk</a></div></section>`; return; }
+          const r = await Store.signUp(asCoach ? f : Object.assign(f, { quiz: q.done ? q : null, coach_id: q.coach_id || null, ref: Store.ref.get() || null }));
+          if (r.needsConfirm) { app.innerHTML = `<section class="wrap quiz"><div class="card center"><div style="font-size:40px">📩</div><h2>Cek email kamu</h2><p class="muted">Kami mengirim link konfirmasi ke <b>${esc(f.email)}</b>. Klik link tersebut, lalu masuk ${asCoach ? "ke Panel Pelatih" : "untuk melanjutkan pembayaran"}.</p><a class="btn mt16" href="#/masuk/${esc(asCoach ? "pelatih" : planId)}">Ke halaman masuk</a></div></section>`; return; }
         } else await Store.signIn(f.email, f.password);
         await refreshUser();
+        if (state.me && state.me.role === "coach" && (asCoach || !planId)) { goCoachPanel(); return; }
+        if (asCoach) { if (state.me && state.me.role === "admin") { location.href = "admin.html"; return; } await coachNotYet(); return; }
         if (q.done && state.me && !state.me.quiz) { try { await Store.updateMe({ quiz: q }); } catch (x) {} }
         if (q.coach_id && state.me && state.me.role === "member" && !state.me.coach_id) { try { await Store.setMyCoach(q.coach_id); await refreshUser(); } catch (x) {} }
         location.hash = planId ? "#/bayar/" + planId : "#/dashboard";
@@ -1237,7 +1253,7 @@
               ${refTxt ? `<li><b>Komisi referral ${esc(refTxt)}</b> untuk setiap pendaftar baru lewat kode referralmu.</li>` : ""}
             </ul></div>
           <div class="card dashed"><span class="label muted">Alur seleksi</span>
-            <ol class="steps-mini"><li>Kirim formulir & CV.</li><li>Admin memeriksa data dan menghubungi via WhatsApp.</li><li>Setelah disetujui, buat akun (atau masuk) dengan email yang sama — Panel Pelatih langsung terbuka.</li></ol></div>
+            <ol class="steps-mini"><li>Kirim formulir & CV.</li><li>Admin memeriksa data dan menghubungi via WhatsApp.</li><li>Setelah disetujui, <a href="#/daftar/pelatih">buat akun pelatih</a> (atau <a href="#/masuk/pelatih">masuk</a>) dengan email yang sama — Panel Pelatih langsung terbuka.</li></ol></div>
         </div>
         ${isCoach ? "" : `<form class="card" id="caForm" novalidate>
           <h2 class="mt0">Formulir calon pelatih</h2>
@@ -1339,8 +1355,8 @@
     try {
       const routes = {
         "": viewLanding, kuis: () => viewQuiz(p), hasil: viewResult, langganan: viewPricing,
-        daftar: () => (state.me ? (location.hash = p ? "#/bayar/" + p : "#/dashboard") : viewAuth("daftar", p)),
-        masuk: () => (state.me ? (location.hash = p ? "#/bayar/" + p : "#/dashboard") : viewAuth("masuk", p)),
+        daftar: () => (state.me ? (p === "pelatih" ? (state.me.role === "coach" ? goCoachPanel() : coachNotYet()) : (location.hash = p ? "#/bayar/" + p : "#/dashboard")) : viewAuth("daftar", p)),
+        masuk: () => (state.me ? (p === "pelatih" ? (state.me.role === "coach" ? goCoachPanel() : coachNotYet()) : (location.hash = p ? "#/bayar/" + p : "#/dashboard")) : viewAuth("masuk", p)),
         lupa: viewForgot, bayar: () => viewPay(p), dashboard: viewDashboard, modul: () => viewModule(p), lesson: () => viewLesson(p),
         video: () => viewVideo(p), rutinitas: () => viewVideoList("routine"), motivasi: () => viewVideoList("motivation"),
         artikel: () => (p ? viewArticle(decodeURIComponent(p)) : viewArticles()), kalkulator: () => viewCalc(p), "rencana-makan": () => viewMealPlan(p), perangkat: viewDevices, akun: viewAccount,

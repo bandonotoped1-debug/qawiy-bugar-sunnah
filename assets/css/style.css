@@ -583,3 +583,8 @@ body { background: #0d241b linear-gradient(180deg, #11301f 0px, #0d241b 520px) n
 .field .req-check { display: flex; }
 .field .req-check input { width: 18px; height: 18px; padding: 0; flex: none; accent-color: var(--em); }
 .field .req-check span, .req-check { color: var(--ink); }
+.auth-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--cream-2); margin-bottom: 18px; }
+.auth-seg a { text-align: center; padding: 10px; border-radius: 10px; text-decoration: none; font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--muted); }
+.auth-seg a.on { background: var(--em); color: #fff; }
+.coach-join { border: 1px solid rgba(212,169,60,.4); border-radius: 18px; padding: 18px 20px; }
+.coach-join p { margin: 4px 0 12px; color: var(--muted-d); font-size: 14.5px; }
