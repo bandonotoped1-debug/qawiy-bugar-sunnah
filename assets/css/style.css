@@ -240,8 +240,8 @@ input, select, textarea { font: inherit; color: inherit; }
 .metric b small { font-size: 14px; font-family: var(--body); }
 
 /* ---------------- pricing ---------------- */
-.plans { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; align-items: stretch; }
-@media (max-width: 920px) { .plans { grid-template-columns: 1fr; } }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 360px)); justify-content: center; gap: 18px; align-items: stretch; }
+@media (max-width: 920px) { .plans { grid-template-columns: minmax(0,1fr); justify-content: stretch; } }
 .plan { background: var(--cream); color: var(--ink); border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 14px; position: relative; border: 2px solid transparent; }
 .plan.featured { border-color: var(--acc); box-shadow: 8px 8px 0 var(--acc); }
 .plan h3 { font-family: var(--display); text-transform: uppercase; font-size: 20px; margin: 0; }
