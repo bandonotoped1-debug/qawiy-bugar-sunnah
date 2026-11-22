@@ -7,12 +7,12 @@
 // menghitung gram & makro sendiri dari database (angka gizi tidak dikarang AI).
 //
 // Variabel lingkungan (Vercel → Settings → Environment Variables):
-//   ANTHROPIC_API_KEY   kunci API Anthropic (Claude)      — atau —
-//   OPENROUTER_API_KEY  kunci API OpenRouter
-//   AI_MODEL            opsional, mis. "claude-haiku-5-5" (default)
+//   GEMINI_API_KEY      kunci API Google Gemini (aistudio.google.com) — atau —
+//   ANTHROPIC_API_KEY / OPENROUTER_API_KEY  (lihat api/_ai.js)
 //   SUPABASE_URL / SUPABASE_ANON_KEY  opsional (default: nilai di config.js)
 // =====================================================================
 const fs = require("fs");
+const { enabled, callAI } = require("./_ai");
 const path = require("path");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://fmikdgeevcvuchcrwuwc.supabase.co";
@@ -37,34 +37,9 @@ async function readBody(req) {
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"); } catch (e) { return {}; }
 }
 
-async function callAI(system, user) {
-  const model = process.env.AI_MODEL || "claude-haiku-5-5";
-  if (process.env.ANTHROPIC_API_KEY) {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: 1500, system, messages: [{ role: "user", content: user }] })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error((j.error && j.error.message) || "AI error " + r.status);
-    return (j.content || []).map((c) => c.text || "").join("");
-  }
-  if (process.env.OPENROUTER_API_KEY) {
-    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + process.env.OPENROUTER_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ model: process.env.AI_MODEL || "anthropic/claude-haiku-5-5", max_tokens: 1500, messages: [{ role: "system", content: system }, { role: "user", content: user }] })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error((j.error && j.error.message) || "AI error " + r.status);
-    return j.choices[0].message.content || "";
-  }
-  return null;
-}
-
 module.exports = async (req, res) => {
   if (req.method !== "POST") return send(res, 405, { error: "Gunakan POST" });
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY)
+  if (!enabled())
     return send(res, 503, { error: "Fitur AI belum diaktifkan admin (kunci API belum dipasang).", code: "ai_disabled" });
 
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -116,7 +91,7 @@ Isi SEMUA slot di atas, urut, hanya dengan bagian yang tercantum pada slot itu.
 Format JSON: {"judul":"...","meals":[{"slot":"${slotList[0].id}","dish":"...","karbo":"id","protein":"id","sayur":"id","lemak":"id","buah":"id"}, ...],"tips":"satu kalimat"}`;
 
   let text;
-  try { text = await callAI(system, user); }
+  try { text = await callAI(system, [{ role: "user", content: user }], { json: true, maxTokens: 1500 }); }
   catch (e) { return send(res, 502, { error: "Layanan AI gagal: " + e.message }); }
 
   let out;

@@ -55,7 +55,7 @@ WHO Guidelines on Physical Activity 2020 · Kemenkes RI (G4 G1 L5, Pedoman Gizi 
 2. `supabase/migrations/003_google_health.sql` — sambungan Google Health
 
 ### AI (rekomendasi menu & chatbot)
-Vercel → proyek → Settings → Environment Variables: `ANTHROPIC_API_KEY` (atau `OPENROUTER_API_KEY`), opsional `AI_MODEL`. Redeploy. Tanpa kunci, chatbot menjawab dari FAQ dan tetap mengarahkan ke WhatsApp admin.
+Vercel → proyek → Settings → Environment Variables: `GEMINI_API_KEY` (dari https://aistudio.google.com/apikey), opsional `GEMINI_MODEL` (default `gemini-flash-latest`). Alternatif: `ANTHROPIC_API_KEY` atau `OPENROUTER_API_KEY`. Redeploy. Tanpa kunci, chatbot menjawab dari FAQ dan tetap mengarahkan ke WhatsApp admin.
 
 ### Google Health (Fitbit, Pixel Watch, catatan di aplikasi Google Health)
 1. Google Cloud Console → buat proyek → aktifkan **Google Health API** (akses developer baru dibuka bertahap oleh Google).

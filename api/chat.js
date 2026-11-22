@@ -2,10 +2,11 @@
 // POST /api/chat — chatbot AI QOWIY (Vercel Serverless Function)
 // Body: { messages: [{role:"user"|"assistant", content}], page }
 // Balasan: { reply, handoff }  — handoff=true → tampilkan tombol WhatsApp admin
-// Memakai kunci yang sama dengan /api/menu (ANTHROPIC_API_KEY atau OPENROUTER_API_KEY).
+// Memakai kunci yang sama dengan /api/menu (GEMINI_API_KEY; lihat api/_ai.js).
 // Kuota harian per pengguna/IP disimpan di Supabase (RPC chat_take_quota).
 // =====================================================================
 const crypto = require("crypto");
+const { enabled, callAI } = require("./_ai");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://fmikdgeevcvuchcrwuwc.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_anFN9KWuBIKkwG8aOYkG8Q_hRi8IBcl";
@@ -25,31 +26,9 @@ async function sbFetch(path, opts, token) {
   return fetch(SUPABASE_URL + path, Object.assign({}, opts, { headers: Object.assign({ apikey: SUPABASE_KEY, Authorization: "Bearer " + (token || SUPABASE_KEY), "content-type": "application/json" }, (opts && opts.headers) || {}) }));
 }
 
-async function callAI(system, messages) {
-  const model = process.env.AI_MODEL || "claude-haiku-5-5";
-  if (process.env.ANTHROPIC_API_KEY) {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: 700, system, messages })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error((j.error && j.error.message) || "AI error " + r.status);
-    return (j.content || []).map((c) => c.text || "").join("");
-  }
-  const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: "Bearer " + process.env.OPENROUTER_API_KEY, "content-type": "application/json" },
-    body: JSON.stringify({ model: process.env.AI_MODEL || "anthropic/claude-haiku-5-5", max_tokens: 700, messages: [{ role: "system", content: system }].concat(messages) })
-  });
-  const j = await r.json();
-  if (!r.ok) throw new Error((j.error && j.error.message) || "AI error " + r.status);
-  return j.choices[0].message.content || "";
-}
-
 module.exports = async (req, res) => {
   if (req.method !== "POST") return send(res, 405, { error: "Gunakan POST" });
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY) return send(res, 503, { error: "AI belum diaktifkan", code: "ai_disabled" });
+  if (!enabled()) return send(res, 503, { error: "AI belum diaktifkan", code: "ai_disabled" });
 
   const body = await readBody(req);
   const msgs = (Array.isArray(body.messages) ? body.messages : [])
@@ -95,7 +74,7 @@ Aturan:
 - Jangan pernah meminta password, nomor kartu, atau data sensitif.`;
 
   let text;
-  try { text = await callAI(system, msgs); }
+  try { text = await callAI(system, msgs, { maxTokens: 700 }); }
   catch (e) { return send(res, 502, { reply: "Maaf, asisten sedang gangguan. Silakan hubungi admin lewat WhatsApp.", handoff: true }); }
   const handoff = /\[\[WA\]\]/.test(text);
   return send(res, 200, { reply: text.replace(/\[\[WA\]\]/g, "").trim(), handoff });
