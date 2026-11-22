@@ -19,7 +19,7 @@
       ]
     },
     {
-      "source": "/admin(.html)?",
+      "source": "/(admin|pelatih)(.html)?",
       "headers": [
         {
           "key": "X-Robots-Tag",

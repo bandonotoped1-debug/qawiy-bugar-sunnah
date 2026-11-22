@@ -53,6 +53,14 @@ WHO Guidelines on Physical Activity 2020 · Kemenkes RI (G4 G1 L5, Pedoman Gizi 
 ### Database (jalankan berurutan di Supabase → SQL Editor)
 1. `supabase/migrations/002_gizi_perangkat_chat.sql` — pengaturan makro, menu tersimpan, data tubuh, kuota AI & chat
 2. `supabase/migrations/003_google_health.sql` — sambungan Google Health
+3. `supabase/migrations/004_pelatih_referral.sql` — role pelatih, pendaftaran pelatih + CV, referral, bagi hasil & komisi, materi pelatih (video + dokumen)
+
+### Role: Admin, Pelatih, Member
+- **Calon pelatih** mengisi `#/daftar-pelatih` (email, WhatsApp, CV ≤ 5 MB ke bucket privat `cv`). Syarat yang tampil diatur admin di **Admin → Pelatih → Syarat pendaftaran**.
+- **Admin** menyetujui di **Admin → Pelatih → Seleksi pendaftar**. Bila email itu sudah punya akun, langsung menjadi pelatih; bila belum, akun otomatis menjadi pelatih saat ia mendaftar dengan email tersebut. Setiap pelatih mendapat kode referral unik.
+- **Pelatih** membuka `/pelatih.html`: member binaan (checklist sunnah 7 hari, lesson, berat badan, catatan pelatih), materi sendiri (video/dokumen), penghasilan, dan tautan referral `https://domain/#/r/KODE`.
+- **Member** memilih pelatih ikhwan/akhwat di kuis (diurutkan sesuai tujuan & tempat latihan) atau di `#/pilih-pelatih`; materi pelatih bersifat baca saja.
+- **Komisi** dihitung otomatis oleh database saat admin mengaktifkan langganan: bagi hasil % dari nominal pembelian member binaan, dan komisi referral (% harga normal atau nominal tetap; pembelian pertama atau setiap pembelian). Atur di **Admin → Transaksi & Komisi**, lalu tandai "dibayar" setelah ditransfer.
 
 ### AI (rekomendasi menu & chatbot)
 Vercel → proyek → Settings → Environment Variables: `GEMINI_API_KEY` (dari https://aistudio.google.com/apikey), opsional `GEMINI_MODEL` (default `gemini-flash-latest`). Alternatif: `ANTHROPIC_API_KEY` atau `OPENROUTER_API_KEY`. Redeploy. Tanpa kunci, chatbot menjawab dari FAQ dan tetap mengarahkan ke WhatsApp admin.

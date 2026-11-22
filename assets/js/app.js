@@ -22,7 +22,7 @@
   async function refreshUser() {
     state.me = (await Store.session()) ? await Store.me() : null;
     state.subs = state.me ? await Store.mySubs() : [];
-    state.active = Store.hasActive(state.subs) || (state.me && state.me.role === "admin");
+    state.active = Store.hasActive(state.subs) || (state.me && (state.me.role === "admin" || state.me.role === "coach"));
     renderNav();
   }
   function renderNav() {
@@ -30,8 +30,9 @@
     const items = [["", "Beranda"], ["langganan", "Langganan"], ["kalkulator", "Kalkulator"], ["artikel", "Artikel"]];
     if (state.me) items.push(["dashboard", "Dashboard"], ["akun", "Akun"]);
     else items.push(["masuk", "Masuk"]);
-    if (state.me && state.me.role === "admin") items.push(["admin", "Admin"]);
-    $("#nav").innerHTML = items.map(([k, t]) => k === "admin" ? `<a href="admin.html">${t}</a>` : `<a href="#/${k}" class="${r === k ? "active" : ""}">${t}</a>`).join("");
+    if (state.me && state.me.role === "coach") items.push(["pelatih.html", "Panel Pelatih"]);
+    if (state.me && state.me.role === "admin") items.push(["admin.html", "Admin"]);
+    $("#nav").innerHTML = items.map(([k, t]) => k.endsWith(".html") ? `<a href="${k}" class="nav-panel">${t}</a>` : `<a href="#/${k}" class="${r === k ? "active" : ""}">${t}</a>`).join("");
   }
 
   /* ------------------------------------------------------------------ */
@@ -40,6 +41,35 @@
   const QKEY = "qowiy_quiz";
   const quiz = () => { try { return JSON.parse(localStorage.getItem(QKEY)) || {}; } catch (e) { return {}; } };
   const saveQuiz = (q) => localStorage.setItem(QKEY, JSON.stringify(q));
+
+  /* ------------------------------------------------------------------ */
+  /* PELATIH: daftar, peringkat kecocokan, kartu                         */
+  /* ------------------------------------------------------------------ */
+  const SPEC = { turun: "Turun berat", kuat: "Kekuatan & otot", bugar: "Bugar untuk ibadah", sunnah: "Gaya hidup sunnah", rumah: "Latihan di rumah", gym: "Latihan di gym" };
+  let coachCache = null;
+  async function getCoaches(force) { if (!coachCache || force) coachCache = await Store.coaches().catch(() => []); return coachCache; }
+  function rankCoaches(list, q) {
+    const ref = Store.ref.get();
+    const place = q.place === "gym" ? "gym" : q.place ? "rumah" : "";
+    return list.filter((c) => c.accepting !== false && (!q.gender || c.gender === q.gender)).map((c) => {
+      const sp = c.specialties || [];
+      const score = (sp.includes(q.goal) ? 3 : 0) + (place && sp.includes(place) ? 1 : 0) + (ref && c.referral_code === ref ? 10 : 0);
+      return Object.assign({}, c, { score, invited: !!ref && c.referral_code === ref });
+    }).sort((a, b) => b.score - a.score || a.display_name.localeCompare(b.display_name));
+  }
+  const initials = (n) => String(n || "?").replace(/^(coach|ustadz|ustadzah)\s+/i, "").split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const avatar = (c, size) => c.photo_url ? `<img class="avatar" src="${esc(c.photo_url)}" alt="" style="width:${size || 56}px;height:${size || 56}px">` : `<span class="avatar ini" style="width:${size || 56}px;height:${size || 56}px">${esc(initials(c.display_name))}</span>`;
+  function coachCardHTML(c, opts) {
+    opts = opts || {};
+    return `<div class="coach-card ${opts.on ? "on" : ""}" ${opts.pick ? `data-coach="${c.id}" role="button" tabindex="0"` : ""}>
+      ${avatar(c)}
+      <div class="cc-body"><div class="row wrap-it" style="gap:6px"><b class="cc-name">${esc(c.display_name)}</b>
+        ${opts.best ? '<span class="pill gold">Paling cocok</span>' : ""}${c.invited ? '<span class="pill acc">Mengundangmu</span>' : ""}</div>
+        <span class="muted" style="font-size:13px">${c.gender === "akhwat" ? "Pelatih akhwat" : "Pelatih ikhwan"}${c.city ? " · " + esc(c.city) : ""}</span>
+        ${c.bio ? `<p class="cc-bio">${esc(c.bio)}</p>` : ""}
+        ${(c.specialties || []).length ? `<div class="tag-row">${c.specialties.map((x) => `<span class="pill cream">${esc(SPEC[x] || x)}</span>`).join("")}</div>` : ""}</div>
+      ${opts.pick ? `<span class="cc-check">${opts.on ? "✓" : ""}</span>` : ""}</div>`;
+  }
 
   const QUESTIONS = [
     { id: "name", type: "text", title: "Assalamu'alaikum! Siapa nama panggilanmu?", sub: "Supaya program terasa personal.", placeholder: "mis. Ahmad / Aisyah" },
@@ -70,6 +100,7 @@
       ["jalan", "🕌", "Jalan kaki ke masjid", ""], ["olahraga", "🏹", "Olahraga rutin", ""]] },
     { id: "health", type: "single", title: "Ada kondisi kesehatan khusus?", sub: "Jujur ya — ini demi keamananmu.", options: [
       ["tidak", "✅", "Tidak ada", ""], ["hamil", "🤰", "Sedang hamil / menyusui", ""], ["kronis", "🩺", "Diabetes, hipertensi, atau penyakit jantung", ""], ["cedera", "🦴", "Cedera sendi / punggung", ""]] },
+    { id: "coach", type: "coach", title: "Pilih pelatih pendampingmu", sub: "Ikhwan didampingi pelatih ikhwan, akhwat didampingi pelatih akhwat. Urutan disesuaikan dengan tujuan dan tempat latihanmu." },
     { id: "contact", type: "contact", title: "Ke mana hasil analisismu kami kirim?", sub: "Kami simpan hasil tesmu agar bisa langsung dipakai saat mendaftar." }
   ];
 
@@ -166,6 +197,12 @@
         </div>
       </section>
 
+      <section class="wrap coach-band">
+        <div><span class="kicker">Untuk pelatih</span><h2>Dampingi umat menjadi mukmin yang kuat.</h2>
+          <p class="muted-d">Susun materi latihan sendiri, pantau progres ibadah dan kebugaran member binaanmu, dan dapatkan bagi hasil dari setiap program yang mereka beli.</p></div>
+        <a class="btn" href="#/daftar-pelatih">Daftar khusus pelatih →</a>
+      </section>
+
       <section class="wrap">
         <div class="cta-band">
           <img src="assets/img/logo-mark.png" alt="" width="84" height="84">
@@ -184,9 +221,13 @@
     $("#bmiMini").oninput = calc; calc();
   }
 
-  function viewQuiz(step) {
+  async function viewQuiz(step) {
     const q = quiz(); step = Math.max(0, Math.min(QUESTIONS.length - 1, +step || 0));
     const Q = QUESTIONS[step];
+    const coaches = rankCoaches(await getCoaches(), q);
+    const coachIdx = QUESTIONS.findIndex((x) => x.type === "coach");
+    if (Q.type === "coach" && !coaches.length) { location.replace("#/kuis/" + (step + 1)); return; }
+    const backStep = step - 1 === coachIdx && !coaches.length ? step - 2 : step - 1;
     const pct = Math.round((step / QUESTIONS.length) * 100);
     let body = "";
     if (Q.type === "text") body = `<div class="field mt24"><input id="qin" value="${esc(q[Q.id] || "")}" placeholder="${esc(Q.placeholder)}" autofocus></div>`;
@@ -198,6 +239,11 @@
         <label class="field"><span>Usia (tahun)</span><input id="qage" type="number" inputmode="numeric" min="13" max="90" value="${esc(q.age || "")}"></label>
         <label class="field"><span>Tinggi (cm)</span><input id="qh" type="number" inputmode="numeric" min="120" max="220" value="${esc(q.height || "")}"></label>
         <label class="field"><span>Berat (kg)</span><input id="qw" type="number" inputmode="decimal" min="30" max="250" value="${esc(q.weight || "")}"></label></div>`;
+    if (Q.type === "coach") {
+      if (!q.coach_id && coaches[0] && coaches[0].invited) { q.coach_id = coaches[0].id; saveQuiz(q); }
+      body = `<div class="coach-list mt24">${coaches.slice(0, 8).map((c, i) => coachCardHTML(c, { pick: true, on: q.coach_id === c.id, best: i === 0 && c.score > 0 && !c.invited })).join("")}</div>
+        <button class="btn ghost block mt16" id="qauto">Pilihkan yang paling cocok untukku</button>`;
+    }
     if (Q.type === "contact") body = `<div class="mt24">
         <label class="field"><span>Email</span><input id="qemail" type="email" value="${esc(q.email || "")}" placeholder="nama@email.com"></label>
         <label class="field"><span>No. WhatsApp</span><input id="qwa" type="tel" value="${esc(q.whatsapp || "")}" placeholder="08xxxxxxxxxx"></label>
@@ -209,7 +255,7 @@
       ${body}
       <div class="err" id="qerr"></div>
       <div class="qnav">
-        ${step > 0 ? `<a class="btn ghost" href="#/kuis/${step - 1}">← Kembali</a>` : `<a class="btn ghost" href="#/">Batal</a>`}
+        ${step > 0 ? `<a class="btn ghost" href="#/kuis/${backStep}">← Kembali</a>` : `<a class="btn ghost" href="#/">Batal</a>`}
         <button class="btn acc" id="qnext">${step === QUESTIONS.length - 1 ? "Lihat hasil analisis" : "Lanjut"} →</button>
       </div></div></section>`;
 
@@ -218,6 +264,7 @@
       if (Q.type === "text") { const v = $("#qin").value.trim(); if (!v) return err("Isi nama panggilanmu dulu ya."); q[Q.id] = v; }
       if (Q.type === "single" && !q[Q.id]) return err("Pilih salah satu.");
       if (Q.type === "multi" && !(q[Q.id] || []).length) return err("Pilih minimal satu.");
+      if (Q.type === "coach" && !coaches.some((c) => c.id === q.coach_id)) return err("Pilih salah satu pelatih, atau ketuk “Pilihkan yang paling cocok”.");
       if (Q.type === "body") {
         const a = +$("#qage").value, hh = +$("#qh").value, ww = +$("#qw").value;
         if (!(a >= 13 && a <= 90)) return err("Usia antara 13–90 tahun.");
@@ -233,6 +280,7 @@
         q.result = computeResult(q); saveQuiz(q);
         $("#qnext").disabled = true;
         await Store.saveLead({ name: q.name, email: em, whatsapp: wa, answers: Object.assign({}, q, { result: undefined }), result: q.result });
+        if (state.me && q.coach_id && q.coach_id !== state.me.coach_id) { try { await Store.setMyCoach(q.coach_id); await refreshUser(); } catch (x) {} }
         location.hash = "#/hasil"; return;
       }
       saveQuiz(q); location.hash = "#/kuis/" + (step + 1);
@@ -242,6 +290,11 @@
       if (Q.type === "single") { q[Q.id] = v; saveQuiz(q); $$(".opt", app).forEach((x) => x.classList.toggle("on", x === b)); setTimeout(next, 180); }
       else { const arr = q[Q.id] || []; q[Q.id] = arr.includes(v) ? arr.filter((x) => x !== v) : arr.concat(v); saveQuiz(q); b.classList.toggle("on"); }
     });
+    $$("[data-coach]", app).forEach((el) => (el.onclick = el.onkeydown = (e) => {
+      if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      q.coach_id = el.dataset.coach; saveQuiz(q); $$("[data-coach]", app).forEach((x) => { x.classList.toggle("on", x === el); $(".cc-check", x).textContent = x === el ? "✓" : ""; });
+    }));
+    if ($("#qauto")) $("#qauto").onclick = () => { q.coach_id = coaches[0].id; saveQuiz(q); next(); };
     $("#qnext").onclick = next;
     app.querySelectorAll("input").forEach((i) => i.addEventListener("keydown", (e) => e.key === "Enter" && next()));
   }
@@ -283,6 +336,7 @@
           <div class="dalil"><p>“Amal yang paling dicintai Allah adalah yang paling kontinu walaupun sedikit.”</p><a href="https://sunnah.com/bukhari:6464" target="_blank" rel="noopener">HR. Bukhari no. 6464</a></div>
         </div>
       </div>
+      <div id="resCoach"></div>
       <div class="section"><div class="section-head"><h2>Rencana makan yang direkomendasikan</h2><span class="label muted-d">Hari 1 · ${r.medical ? "perlu tenaga kesehatan" : r.target.toLocaleString("id-ID") + " kkal"} · 1 protein per hidangan · porsi dalam gram</span></div>
         ${r.medical ? `<div class="card"><p class="muted" style="margin:0">Karena kondisi kesehatanmu, rencana makan sebaiknya disusun bersama dokter/ahli gizi. Prinsip umum: sepertiga perut, Isi Piringku, batasi gula-garam-lemak.</p></div>` : `<div id="resPlan"><div class="loading">Menyusun menu…</div></div>`}
         ${r.medical ? "" : `<div class="row wrap-it mt16"><a class="btn light" href="#/rencana-makan/hari1">Atur makro & buka rencana makan lengkap →</a><span class="muted-d" style="font-size:14px">Menu 7 hari bervariasi + menu sahur & berbuka tersedia untuk member.</span></div>`}
@@ -293,6 +347,7 @@
         <p class="muted-d">Semua video kelas, rutinitas harian, dan checklist sunnah sudah disiapkan untuk ${trackTxt}.</p>
         <a class="btn acc mt16" href="#/langganan">Pilih paket langganan →</a>
       </div></section>`;
+    if (q.coach_id) getCoaches().then((list) => { const c = list.find((x) => x.id === q.coach_id); const el = $("#resCoach"); if (c && el) el.innerHTML = `<div class="section"><div class="section-head"><h2>Pelatih pendampingmu</h2><span class="label muted-d">Bisa diganti kapan saja dari dashboard</span></div>${coachCardHTML(c)}</div>`; });
     if (!r.medical) N.load().then(() => { const el = $("#resPlan"); if (!el) return; const P = loadPrefs(r, q); el.innerHTML = mealCardsHTML(N.autoPlan({ kcal: P.kcal, macro: P, day: 0, meals: P.meals })); });
   }
 
@@ -356,18 +411,20 @@
           <div class="err" id="aerr"></div>
           <button class="btn acc block">${isUp ? "Daftar & lanjutkan" : "Masuk"}</button>
           <p class="center mt16" style="font-size:14px">${isUp ? `Sudah punya akun? <a href="#/masuk/${esc(planId)}">Masuk</a>` : `Belum punya akun? <a href="#/daftar/${esc(planId)}">Daftar dulu</a> · <a href="#/lupa">Lupa password?</a>`}</p>
-          ${!isUp && Store.mode === "demo" ? `<p class="muted center" style="font-size:12.5px">Demo admin: admin@qowiy.id / admin123</p>` : ""}
+          ${isUp && Store.ref.get() ? `<p class="center muted" style="font-size:13px">Kode undangan pelatih: <b>${esc(Store.ref.get())}</b></p>` : ""}
+          ${!isUp && Store.mode === "demo" ? `<p class="muted center" style="font-size:12.5px">Demo admin: admin@qowiy.id / admin123 · Demo pelatih: coach@qowiy.id / coach123</p>` : ""}
         </form>
       </div></section>`;
     $("#authForm").onsubmit = async (e) => {
       e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)); const btn = e.target.querySelector("button"); btn.disabled = true; $("#aerr").textContent = "";
       try {
         if (isUp) {
-          const r = await Store.signUp(Object.assign(f, { quiz: q.done ? q : null }));
+          const r = await Store.signUp(Object.assign(f, { quiz: q.done ? q : null, coach_id: q.coach_id || null, ref: Store.ref.get() || null }));
           if (r.needsConfirm) { app.innerHTML = `<section class="wrap quiz"><div class="card center"><div style="font-size:40px">📩</div><h2>Cek email kamu</h2><p class="muted">Kami mengirim link konfirmasi ke <b>${esc(f.email)}</b>. Klik link tersebut, lalu masuk untuk melanjutkan pembayaran.</p><a class="btn mt16" href="#/masuk/${esc(planId)}">Ke halaman masuk</a></div></section>`; return; }
         } else await Store.signIn(f.email, f.password);
         await refreshUser();
         if (q.done && state.me && !state.me.quiz) { try { await Store.updateMe({ quiz: q }); } catch (x) {} }
+        if (q.coach_id && state.me && state.me.role === "member" && !state.me.coach_id) { try { await Store.setMyCoach(q.coach_id); await refreshUser(); } catch (x) {} }
         location.hash = planId ? "#/bayar/" + planId : "#/dashboard";
       } catch (err) { $("#aerr").textContent = err.message; btn.disabled = false; }
     };
@@ -503,14 +560,28 @@
   }
   function filterAudience(list) { const g = state.me && state.me.gender; return list.filter((v) => !v.audience || v.audience === "semua" || !g || v.audience === g); }
 
+  function coachDashHTML(c, notes) {
+    if (!c) return `<div class="card section row wrap-it coach-empty"><div style="flex:1;min-width:240px"><span class="label muted">Pelatih pendamping</span><h3 style="margin:6px 0 4px">Kamu belum punya pelatih</h3><p class="muted" style="margin:0;font-size:14.5px">Pilih pelatih ${state.me.gender === "akhwat" ? "akhwat" : state.me.gender === "ikhwan" ? "ikhwan" : ""} yang akan menyusun materi dan memantau progres ibadah & latihanmu.</p></div><a class="btn acc sm" href="#/pilih-pelatih">Pilih pelatih →</a></div>`;
+    return `<div class="card section coach-dash"><div class="row wrap-it" style="align-items:flex-start;gap:16px">
+      ${avatar(c, 64)}<div style="flex:1;min-width:220px"><span class="label muted">Pelatih pendampingmu</span><h3 style="margin:4px 0 2px">${esc(c.display_name)}</h3>
+        <span class="muted" style="font-size:13.5px">${c.city ? esc(c.city) + " · " : ""}memantau checklist sunnah, lesson, dan berat badanmu</span>
+        ${c.active === false ? '<div class="notice mt8">Pelatih ini sedang tidak aktif. Silakan pilih pelatih lain.</div>' : ""}</div>
+      <div class="row wrap-it">${c.whatsapp ? `<a class="btn sm acc" target="_blank" rel="noopener" href="${waLink(c.whatsapp, "Assalamu'alaikum " + c.display_name + ", saya " + (state.me.full_name || "") + " member " + S.brand + ".")}">Chat pelatih</a>` : ""}<a class="btn sm ghost" href="#/pilih-pelatih">Ganti</a></div></div>
+      ${notes && notes.length ? `<div class="notes mt16"><span class="label muted">Catatan dari pelatih</span>${notes.slice(0, 3).map((n) => `<div class="note"><p>${esc(n.body)}</p><small class="muted">${fmtDate(n.created_at)}</small></div>`).join("")}</div>` : ""}
+    </div>`;
+  }
+
   async function viewDashboard() {
     if (!state.me) { location.hash = "#/masuk"; return; }
-    const [mods, lessons, done, counts, routines, motiv, arts, todayH] = await Promise.all([
+    const [allMods, allLessons, done, counts, routines, motiv, arts, todayH, myCoach, notes] = await Promise.all([
       Store.modules(), Store.lessons(), Store.progress(), Store.lessonCounts(),
       state.active ? Store.videos("routine") : Store.videoTeasers("routine"),
       state.active ? Store.videos("motivation") : Store.videoTeasers("motivation"),
-      Store.articles(), Store.habits(Store.today())
+      Store.articles(), Store.habits(Store.today()),
+      state.me.role === "member" ? Store.myCoach() : null, state.me.role === "member" ? Store.myNotes() : []
     ]);
+    const mods = allMods.filter((m) => !m.coach_id), lessons = allLessons.filter((l) => !l.coach_id);
+    const cMods = allMods.filter((m) => m.coach_id && myCoach && m.coach_id === myCoach.id);
     const ord = orderModules(mods);
     const totalLessons = counts ? Object.values(counts).reduce((a, b) => a + b, 0) : lessons.length;
     const doneCount = lessons.filter((l) => done.has(l.id)).length;
@@ -553,6 +624,12 @@
         ${todayRoutines.length ? `<div class="grid g4">${todayRoutines.slice(0, 4).map((v) => videoCard(v, !state.active && !v.is_free)).join("")}</div>` : `<p class="muted-d">Belum ada video rutinitas untuk hari ini.</p>`}
       </div>
 
+      ${state.me.role === "member" ? coachDashHTML(myCoach, notes) : ""}
+      ${cMods.length ? `<div class="section"><div class="section-head"><h2>Materi dari pelatihmu</h2><span class="label muted-d">${esc(myCoach.display_name)} · video & dokumen</span></div>
+        <div class="grid g3">${cMods.map((m) => { const ls = allLessons.filter((l) => l.module_id === m.id); const tot = (counts && counts[m.id]) || ls.length; const d = ls.filter((l) => done.has(l.id)).length;
+          return `<a class="card cmod" href="${ls.length ? "#/modul/" + m.id : "#/langganan"}"><span class="label muted">${esc(m.tag || "Materi")}</span><h3>${esc(m.title)}</h3><p class="muted">${esc(m.subtitle || "")}</p>
+            <div class="bar"><i style="width:${tot ? Math.round((d / tot) * 100) : 0}%"></i></div><div class="row" style="font-size:13px"><span>${d}/${tot} lesson</span><span class="spacer"></span>${ls.length ? "Buka →" : "🔒 Aktifkan langganan"}</div></a>`; }).join("")}</div></div>` : ""}
+
       <div class="panel section"><div class="section-head"><h2>Perjalanan program</h2><span class="label" style="color:var(--gold)">Jalurmu: ${myTrack() === "turun" ? "Turun Berat" : "Bugar & Kuat"} · centang otomatis tersimpan</span></div>
         ${mapHTML(mods, lessons, counts, done)}
       </div>
@@ -582,6 +659,7 @@
         <form class="card" id="waForm"><span class="label muted">Kontak kamu</span><h3 style="margin:6px 0">No. WhatsApp</h3>
           <label class="field"><input name="whatsapp" value="${esc(state.me.whatsapp || "")}" placeholder="08xxxxxxxxxx" required></label><button class="btn block ghost">Simpan</button></form>
       </div>
+      ${state.me.role === "member" ? `<div class="card section row wrap-it dashed"><div style="flex:1;min-width:240px"><span class="label muted">Untuk pelatih</span><h3 style="margin:6px 0 4px">Ingin menjadi pelatih di ${esc(S.brand)}?</h3><p class="muted" style="margin:0;font-size:14.5px">Lihat syaratnya dan kirim CV — admin akan menyeleksi.</p></div><a class="btn sm" href="#/daftar-pelatih">Daftar khusus pelatih →</a></div>` : ""}
       <div class="card section row wrap-it" style="background:var(--cream-2)"><div style="flex:1;min-width:240px"><h2 class="display" style="font-size:24px">Butuh bantuan?</h2><p class="muted" style="margin:6px 0 0">Tim kami siap membantu soal akses, pembayaran, atau program latihanmu.</p></div>
         <a class="btn acc" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin " + S.brand + ", saya " + (state.me.full_name || "") + " mau bertanya:")}">Tanya admin via WhatsApp</a></div>
     </section>`;
@@ -625,7 +703,8 @@
           ${ord.filter((m) => lessons.some((x) => x.module_id === m.id)).map((m) => `<div class="mod">${esc(m.tag || m.title)}</div>` + lessons.filter((x) => x.module_id === m.id).sort((a, b) => a.sort - b.sort).map((x) => `<a href="#/lesson/${x.id}" class="${x.id === id ? "on" : ""}"><span class="tick ${done.has(x.id) ? "ok" : ""}">${done.has(x.id) ? "✓" : ""}</span><span>${esc(x.title)}${x.duration ? `<br><small class="muted">${esc(x.duration)}</small>` : ""}</span></a>`).join("")).join("")}
         </aside>
         <div>
-          <div id="player"><div class="player"><div class="empty">Memuat video…</div></div></div>
+          <div id="player">${l.video_url || l.storage_path || !(l.doc_url || l.doc_path) ? '<div class="player"><div class="empty">Memuat video…</div></div>' : ""}</div>
+          <div id="docBox"></div>
           <div class="row wrap-it mt16">
             ${prev ? `<a class="btn sm light" href="#/lesson/${prev.id}">← Sebelumnya</a>` : ""}
             <span class="spacer"></span>
@@ -636,8 +715,23 @@
             ${l.dalil ? `<div class="dalil"><p>${esc(l.dalil)}</p></div>` : ""}</div>
         </div>
       </div></section>`;
-    $("#player").innerHTML = await playerHTML(l);
+    if (l.video_url || l.storage_path || !(l.doc_url || l.doc_path)) $("#player").innerHTML = await playerHTML(l);
+    if (l.doc_url || l.doc_path) $("#docBox").innerHTML = await docHTML(l);
     $("#markBtn").onclick = async () => { await Store.setProgress(id, !done.has(id)); if (!done.has(id) && nxt) { toast("Lesson selesai. Lanjut!"); location.hash = "#/lesson/" + nxt.id; } else render(); };
+  }
+
+  /* Penampil dokumen lesson: PDF / Google Drive / Docs ditampilkan langsung, lainnya lewat tombol */
+  async function docHTML(l) {
+    const url = await Store.docUrl(l);
+    if (!url) return "";
+    let m, src = null;
+    if ((m = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/))) src = "https://drive.google.com/file/d/" + m[1] + "/preview";
+    else if ((m = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([\w-]+)/))) src = "https://docs.google.com/" + m[1] + "/d/" + m[2] + "/preview";
+    else if (/\.pdf(\?|#|$)/i.test(url) || /^blob:/.test(url)) src = url;
+    const name = l.doc_name || (l.doc_path ? l.doc_path.split("/").pop().replace(/^idb:/, "").replace(/^[\w-]{36}-/, "") : "Dokumen materi");
+    return `<div class="card doc-card mt16"><div class="row wrap-it"><span class="doc-ic">${icon("book", 22)}</span><div style="flex:1;min-width:180px"><span class="label muted">Modul dokumen</span><b style="display:block">${esc(name)}</b></div>
+      <a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">Buka dokumen ↗</a></div>
+      ${src ? `<iframe class="doc-frame" src="${esc(src)}" title="${esc(name)}" loading="lazy"></iframe>` : ""}</div>`;
   }
 
   async function viewVideo(id) {
@@ -1115,6 +1209,99 @@
     window.addEventListener("hashchange", () => { try { hrConn && hrConn.disconnect(); scale && scale.disconnect(); } catch (e) {} }, { once: true });
   }
 
+  /* ------------------------------------------------------------------ */
+  /* DAFTAR KHUSUS PELATIH                                               */
+  /* ------------------------------------------------------------------ */
+  async function viewCoachApply() {
+    const reqs = S.coach_requirements || [];
+    const app0 = state.me ? await Store.myApplication() : null;
+    const isCoach = state.me && state.me.role === "coach";
+    const share = +S.coach_share_pct || 0, rv = +S.referral_value || 0;
+    const refTxt = rv ? (S.referral_mode === "nominal" ? rp(rv) : rv + "% dari harga normal") : "";
+    const stTxt = { pending: ["gold", "Sedang diseleksi admin"], approved: ["acc", "Disetujui"], rejected: ["red", "Belum lolos seleksi"] };
+    app.innerHTML = `<section class="wrap coach-apply">
+      <div class="ca-hero"><span class="pill acc">Rekrutmen pelatih</span>
+        <h1 class="display">Jadi pelatih di ${esc(S.brand)}</h1>
+        <p class="muted-d">Pelatih ${esc(S.brand)} menyusun materi latihan secara sistematis, mendampingi member ikhwan atau akhwat, dan memantau progres kebugaran serta pembiasaan ibadahnya sampai target tercapai.</p></div>
+      ${isCoach ? `<div class="card center"><h2 class="mt0">Kamu sudah terdaftar sebagai pelatih</h2><a class="btn acc" href="pelatih.html">Buka Panel Pelatih →</a></div>` : ""}
+      ${app0 && !isCoach ? `<div class="notice" style="margin-bottom:18px"><b>Status pendaftaranmu:</b> <span class="pill ${stTxt[app0.status][0]}">${stTxt[app0.status][1]}</span> · dikirim ${fmtDate(app0.created_at)}${app0.status === "approved" ? " — keluar lalu masuk lagi untuk membuka Panel Pelatih." : ""}${app0.admin_note ? `<br><span class="muted">Catatan admin: ${esc(app0.admin_note)}</span>` : ""}</div>` : ""}
+      <div class="grid g2" style="align-items:start;gap:22px">
+        <div class="grid" style="gap:18px">
+          <div class="card"><span class="label muted">Syarat menjadi pelatih</span>
+            <ol class="req-list">${reqs.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></div>
+          <div class="card"><span class="label muted">Yang kamu dapatkan</span>
+            <ul class="benefit">
+              <li><b>Panel pelatih</b> untuk membuat lesson video maupun dokumen.</li>
+              <li><b>Monitoring member</b>: checklist sunnah, lesson selesai, dan berat badan.</li>
+              ${share ? `<li><b>Bagi hasil ${share}%</b> dari setiap pembelian program oleh member binaanmu.</li>` : ""}
+              ${refTxt ? `<li><b>Komisi referral ${esc(refTxt)}</b> untuk setiap pendaftar baru lewat kode referralmu.</li>` : ""}
+            </ul></div>
+          <div class="card dashed"><span class="label muted">Alur seleksi</span>
+            <ol class="steps-mini"><li>Kirim formulir & CV.</li><li>Admin memeriksa data dan menghubungi via WhatsApp.</li><li>Setelah disetujui, buat akun (atau masuk) dengan email yang sama — Panel Pelatih langsung terbuka.</li></ol></div>
+        </div>
+        ${isCoach ? "" : `<form class="card" id="caForm" novalidate>
+          <h2 class="mt0">Formulir calon pelatih</h2>
+          <div class="grid g2" style="gap:10px"><label class="field"><span>Nama lengkap</span><input name="full_name" required value="${esc((state.me && state.me.full_name) || "")}"></label>
+            <label class="field"><span>Kategori</span><select name="gender" required><option value="">Pilih…</option><option value="ikhwan" ${state.me && state.me.gender === "ikhwan" ? "selected" : ""}>Pelatih ikhwan</option><option value="akhwat" ${state.me && state.me.gender === "akhwat" ? "selected" : ""}>Pelatih akhwat</option></select></label></div>
+          <label class="field"><span>Email aktif</span><input name="email" type="email" required value="${esc((state.me && state.me.email) || "")}"></label>
+          <div class="grid g2" style="gap:10px"><label class="field"><span>No. HP (WhatsApp)</span><input name="whatsapp" type="tel" required placeholder="08xxxxxxxxxx" value="${esc((state.me && state.me.whatsapp) || "")}"></label>
+            <label class="field"><span>Kota domisili</span><input name="city" placeholder="mis. Bandung"></label></div>
+          <div class="grid g2" style="gap:10px"><label class="field"><span>Pengalaman latihan fitness (bulan)</span><input name="experience_months" type="number" min="0" inputmode="numeric" required></label>
+            <label class="field"><span>Sertifikasi pelatih</span><select name="certified"><option value="false">Belum bersertifikat</option><option value="true">Sudah bersertifikat</option></select></label></div>
+          <label class="field"><span>Ringkasan pengalaman & keahlian</span><textarea name="bio" placeholder="mis. 2 tahun melatih kelompok ibu-ibu senam di rumah, fokus turun berat…"></textarea></label>
+          <div class="field"><span>Portofolio / CV (PDF, Word, atau foto · maks. 5 MB)</span>
+            <label class="file-drop"><input type="file" name="cv" accept=".pdf,.doc,.docx,image/jpeg,image/png" required><span id="cvName">Pilih file CV…</span></label></div>
+          <div class="field"><span>Pernyataan</span>${reqs.map((r, i) => `<label class="check req-check"><input type="checkbox" data-req="${i}"> ${esc(r)}</label>`).join("")}</div>
+          <div class="err" id="caErr"></div>
+          <button class="btn acc block" id="caBtn">Kirim pendaftaran</button>
+          <p class="muted center" style="font-size:12.5px;margin-bottom:0">Data dan CV hanya dilihat admin untuk seleksi.</p>
+        </form>`}
+      </div></section>`;
+    const f = $("#caForm"); if (!f) return;
+    f.cv.onchange = () => ($("#cvName").textContent = f.cv.files[0] ? f.cv.files[0].name + " · " + (f.cv.files[0].size / 1048576).toFixed(1) + " MB" : "Pilih file CV…");
+    f.onsubmit = async (e) => {
+      e.preventDefault(); const err = (m) => ($("#caErr").textContent = m); err("");
+      const v = Object.fromEntries(new FormData(f)); const file = f.cv.files[0];
+      if (!v.full_name.trim()) return err("Isi nama lengkap.");
+      if (!v.gender) return err("Pilih kategori pelatih ikhwan atau akhwat.");
+      if (!/^\S+@\S+\.\S+$/.test(v.email.trim())) return err("Email belum valid.");
+      if (v.whatsapp.replace(/\D/g, "").length < 9) return err("Nomor WhatsApp belum valid.");
+      if (v.experience_months === "" || +v.experience_months < 0) return err("Isi lama pengalaman latihan (bulan).");
+      if (!file) return err("Unggah CV / portofolio kamu.");
+      if (file.size > 5 * 1048576) return err("Ukuran CV maksimal 5 MB.");
+      const agreed = $$("[data-req]", f).filter((c) => c.checked).map((c) => reqs[+c.dataset.req]);
+      if (agreed.length < reqs.length) return err("Centang semua pernyataan syarat pelatih.");
+      $("#caBtn").disabled = true; $("#caBtn").textContent = "Mengirim…";
+      try {
+        await Store.applyCoach({ full_name: v.full_name.trim(), gender: v.gender, email: v.email.trim(), whatsapp: v.whatsapp.trim(), city: v.city.trim() || null, experience_months: +v.experience_months, certified: v.certified === "true", bio: v.bio.trim() || null, agreements: agreed }, file);
+        app.innerHTML = `<section class="wrap quiz"><div class="card center"><div class="ok-ic">${icon("check", 30)}</div><h2>Pendaftaran terkirim</h2>
+          <p class="muted">Jazakallahu khairan, ${esc(v.full_name.split(" ")[0])}. Admin akan memeriksa CV-mu dan menghubungi lewat WhatsApp <b>${esc(v.whatsapp)}</b>.</p>
+          <p class="muted" style="font-size:14px">Setelah disetujui, buat akun (atau masuk) memakai email <b>${esc(v.email)}</b> — Panel Pelatih langsung terbuka.</p>
+          <div class="row wrap-it" style="justify-content:center"><a class="btn acc" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin " + S.brand + ", saya " + v.full_name + " baru saja mendaftar sebagai pelatih (" + v.gender + ") dengan email " + v.email + ".")}">Kabari admin via WhatsApp</a><a class="btn ghost" href="#/">Ke beranda</a></div></div></section>`;
+      } catch (x) { err(x.message); $("#caBtn").disabled = false; $("#caBtn").textContent = "Kirim pendaftaran"; }
+    };
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* PILIH / GANTI PELATIH (member)                                      */
+  /* ------------------------------------------------------------------ */
+  async function viewPickCoach() {
+    if (!state.me) { location.hash = "#/masuk"; return; }
+    const q = Object.assign({}, (state.me && state.me.quiz) || quiz(), { gender: state.me.gender || quiz().gender });
+    const list = rankCoaches(await getCoaches(true), q);
+    let sel = state.me.coach_id || null;
+    app.innerHTML = `<section class="wrap" style="max-width:860px"><div class="section-head mt40"><h2>Pilih pelatih pendamping</h2><span class="label muted-d">${q.gender ? "Pelatih " + esc(q.gender) : "Lengkapi ikhwan/akhwat di Akun"}</span></div>
+      ${!q.gender ? `<div class="notice">Atur dulu <b>ikhwan / akhwat</b> di halaman <a href="#/akun">Akun</a> agar pelatih yang sesuai bisa ditampilkan.</div>` : ""}
+      ${q.gender && !list.length ? `<div class="card center"><h3 class="mt0">Belum ada pelatih ${esc(q.gender)} yang menerima member baru</h3><p class="muted">Silakan cek lagi nanti atau tanya admin.</p><a class="btn" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin, saya ingin didampingi pelatih " + q.gender + ".")}">Tanya admin</a></div>` : ""}
+      <div class="coach-list">${list.map((c, i) => coachCardHTML(c, { pick: true, on: sel === c.id, best: i === 0 && c.score > 0 && !c.invited })).join("")}</div>
+      ${list.length ? `<div class="row mt24"><a class="btn ghost" href="#/dashboard">Batal</a><span class="spacer"></span><button class="btn acc" id="pcSave">Simpan pilihan</button></div>` : ""}</section>`;
+    $$("[data-coach]").forEach((el) => (el.onclick = () => { sel = el.dataset.coach; $$("[data-coach]").forEach((x) => { x.classList.toggle("on", x === el); $(".cc-check", x).textContent = x === el ? "✓" : ""; }); }));
+    if ($("#pcSave")) $("#pcSave").onclick = async () => {
+      if (!sel) return toast("Pilih salah satu pelatih");
+      try { await Store.setMyCoach(sel); const qq = quiz(); if (qq.done) { qq.coach_id = sel; saveQuiz(qq); } await refreshUser(); toast("Pelatih tersimpan"); location.hash = "#/dashboard"; } catch (x) { toast(x.message); }
+    };
+  }
+
   async function viewAccount() {
     if (!state.me) { location.hash = "#/masuk"; return; }
     const m = state.me;
@@ -1156,7 +1343,9 @@
         masuk: () => (state.me ? (location.hash = p ? "#/bayar/" + p : "#/dashboard") : viewAuth("masuk", p)),
         lupa: viewForgot, bayar: () => viewPay(p), dashboard: viewDashboard, modul: () => viewModule(p), lesson: () => viewLesson(p),
         video: () => viewVideo(p), rutinitas: () => viewVideoList("routine"), motivasi: () => viewVideoList("motivation"),
-        artikel: () => (p ? viewArticle(decodeURIComponent(p)) : viewArticles()), kalkulator: () => viewCalc(p), "rencana-makan": () => viewMealPlan(p), perangkat: viewDevices, akun: viewAccount
+        artikel: () => (p ? viewArticle(decodeURIComponent(p)) : viewArticles()), kalkulator: () => viewCalc(p), "rencana-makan": () => viewMealPlan(p), perangkat: viewDevices, akun: viewAccount,
+        "daftar-pelatih": viewCoachApply, "pilih-pelatih": viewPickCoach,
+        r: () => { captureRef(decodeURIComponent(p || "")); location.replace(state.me ? "#/dashboard" : "#/kuis"); }
       };
       await (routes[r] || viewLanding)();
     } catch (e) {
@@ -1164,6 +1353,16 @@
       if (my === renderId) app.innerHTML = `<section class="wrap"><div class="lockwall mt40"><h2>Terjadi kesalahan</h2><p class="muted-d">${esc(e.message)}</p><a class="btn" href="#/">Ke beranda</a></div></section>`;
     }
   }
+
+  /* Tautan undangan pelatih: ?ref=KODE atau #/r/KODE */
+  function captureRef(code) {
+    code = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!code) return;
+    Store.ref.set(code);
+    getCoaches().then((list) => { const c = list.find((x) => x.referral_code === code); toast(c ? "Kamu diundang " + c.display_name + " ✓" : "Kode undangan " + code + " tersimpan"); });
+  }
+  const qsRef = new URLSearchParams(location.search).get("ref");
+  if (qsRef) { captureRef(qsRef); history.replaceState(null, "", location.pathname + (location.hash || "#/")); }
 
   window.addEventListener("hashchange", render);
   Store.onAuth(async (ev) => { if (ev === "SIGNED_IN" || ev === "SIGNED_OUT") { await refreshUser(); } if (ev === "PASSWORD_RECOVERY") location.hash = "#/akun"; });

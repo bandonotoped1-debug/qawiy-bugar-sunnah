@@ -14,6 +14,16 @@ window.QOWIY_SEED = (function () {
     payment_link: "",
     qris_url: "",
     bank_info: "Transfer BSI 7xxxxxxxxx a.n. QOWIY Indonesia",
+    coach_requirements: [
+      "Sudah memiliki pengalaman latihan fitness minimal 3 bulan (bersertifikat maupun belum).",
+      "Bermanhaj Salafus Shalih — berpegang teguh pada Al-Qur'an dan Sunnah.",
+      "Menutup aurat sesuai syariat.",
+      "Konsisten menjalankan sunnah-sunnah dan ibadah harian."
+    ],
+    coach_share_pct: 30,
+    referral_mode: "persen",
+    referral_value: 10,
+    referral_scope: "pertama",
     plans: [
       {
         id: "mandiri", name: "Program Mandiri", price: 99000, strike: 150000, period: "sekali bayar", badge: "",

@@ -537,3 +537,49 @@ body { background: #0d241b linear-gradient(180deg, #11301f 0px, #0d241b 520px) n
 #mealCount button { min-width: 52px; }
 .gh { display: grid; gap: 4px; }
 .gh-ic { background: #fff; color: #1a73e8; border: 1px solid var(--line); }
+
+/* ================= Pelatih (rekrutmen, pilihan, dashboard, dokumen) ================= */
+.nav a.nav-panel { color: var(--gold); }
+.avatar { border-radius: 50%; object-fit: cover; flex: none; border: 2px solid var(--acc); }
+.avatar.ini { display: grid; place-items: center; background: var(--em); color: var(--gold); font-family: var(--display); font-weight: 800; font-size: 18px; }
+.coach-list { display: grid; gap: 12px; }
+.coach-card { display: flex; gap: 14px; align-items: flex-start; background: #faf8f3; color: var(--ink); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px; text-align: left; }
+.coach-card[data-coach] { cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+.coach-card[data-coach]:hover { border-color: var(--ink-3); }
+.coach-card.on { border-color: var(--em); background: #eef5ef; box-shadow: inset 0 0 0 1px var(--em); }
+.coach-card .cc-body { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.coach-card .cc-name { font-family: var(--display); font-size: 17px; }
+.coach-card .cc-bio { margin: 4px 0 2px; font-size: 14px; color: #3c4238; }
+.coach-card .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.coach-card .cc-check { width: 26px; height: 26px; flex: none; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-weight: 800; color: #fff; }
+.coach-card.on .cc-check { background: var(--em); border-color: var(--em); }
+.coach-band { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; justify-content: space-between; padding: 28px 32px; margin-top: 56px; border: 1px solid rgba(212,169,60,.35); border-radius: 26px; }
+.coach-band h2 { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3vw, 30px); margin: 0 0 6px; letter-spacing: -.02em; }
+.coach-band p { margin: 0; max-width: 60ch; }
+.coach-band .btn { border-color: var(--acc); color: var(--gold); background: transparent; }
+.coach-dash .notes { display: grid; gap: 8px; }
+.coach-dash .note { background: var(--cream-2); border-radius: 12px; padding: 10px 14px; }
+.coach-dash .note p { margin: 0 0 2px; white-space: pre-wrap; }
+.cmod { text-decoration: none; display: grid; gap: 6px; }
+.cmod h3 { margin: 2px 0 0; font-size: 18px; }
+.cmod p { margin: 0; font-size: 14px; }
+.cmod .bar { height: 7px; border-radius: 99px; background: var(--cream-2); overflow: hidden; }
+.cmod .bar i { display: block; height: 100%; background: var(--em); }
+.doc-card { padding: 18px 20px; }
+.doc-ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--em); color: var(--gold); flex: none; }
+.doc-frame { width: 100%; height: min(78vh, 760px); border: 1px solid var(--line); border-radius: 12px; margin-top: 14px; background: #fff; }
+.coach-apply .ca-hero { text-align: center; padding: 46px 0 26px; max-width: 760px; margin: 0 auto; }
+.coach-apply .ca-hero h1 { font-size: clamp(32px, 5.5vw, 54px); margin: 14px 0 10px; }
+.req-list { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; }
+.req-list li::marker { color: var(--acc-2); font-weight: 800; }
+.benefit, .steps-mini { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; }
+.file-drop { display: block; border: 1.5px dashed var(--line); border-radius: 12px; padding: 16px; background: #faf8f3; cursor: pointer; text-align: center; color: var(--muted); font-weight: 600; }
+.file-drop:hover { border-color: var(--em); color: var(--em); }
+.file-drop input { display: none; }
+.req-check { align-items: flex-start !important; gap: 10px; font-size: 14px; margin-bottom: 8px; line-height: 1.45; }
+.req-check input { margin-top: 3px; flex: none; }
+.ok-ic { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 6px; background: var(--em); color: var(--gold); }
+@media (max-width: 640px) { .coach-band { padding: 22px; } .coach-card { padding: 14px; } }
+.field .req-check { display: flex; }
+.field .req-check input { width: 18px; height: 18px; padding: 0; flex: none; accent-color: var(--em); }
+.field .req-check span, .req-check { color: var(--ink); }
