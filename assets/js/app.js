@@ -520,52 +520,36 @@
   function mapHTML(mods, lessons, counts, done) {
     const byTrack = (t) => mods.filter((m) => m.track === t).sort((a, b) => a.sort - b.sort);
     const start = byTrack("start"), turun = byTrack("turun"), kuat = byTrack("kuat"), ekstra = byTrack("ekstra");
-    const nT = Math.max(turun.length, kuat.length, ekstra.length + 1, 1);
     const stat = (m) => {
       const total = counts ? counts[m.id] || 0 : lessons.filter((l) => l.module_id === m.id).length;
       const ls = lessons.filter((l) => l.module_id === m.id); const d = ls.filter((l) => done.has(l.id)).length;
       return { total, d, pct: total ? Math.round((d / total) * 100) : 0, locked: !ls.length && total > 0 };
     };
-    const node = (m, cls, col, row) => {
-      const s = stat(m);
+    const card = (m, cls, s) => {
       const href = s.locked ? "#/langganan" : `#/modul/${m.id}`;
-      return `<a class="node ${cls} ${s.locked ? "locked" : ""} ${s.total && s.d === s.total ? "done" : ""}" data-id="${m.id}" style="grid-column:${col};grid-row:${row}" href="${href}">
+      return `<a class="node ${cls} ${s.locked ? "locked" : ""} ${s.total && s.d === s.total ? "done" : ""}" data-id="${m.id}" href="${href}">
         <h4>${esc(cls.includes("dark") ? m.title : m.tag || m.title)}</h4><p>${esc(m.subtitle || "")}</p>
         <div class="bar"><i style="width:${s.pct}%"></i></div>
         <div class="meta"><span>${s.pct}%</span><span>${s.d}/${s.total} lesson</span></div></a>`;
     };
-    let grid = "";
-    start.forEach((m, i) => (grid += node(m, i === 0 ? "dark" : "", i + 1, 2)));
-    const base = start.length + 2;
-    turun.forEach((m, i) => (grid += node(m, i === 0 ? "dark" : "", base + i, 1)));
-    kuat.forEach((m, i) => (grid += node(m, i === 0 ? "dark" : "", base + i, 3)));
-    ekstra.forEach((m, i) => (grid += node(m, i === 0 ? "hot" : "gold", base + 2 + i, 2)));
-    const cols = `repeat(${start.length}, minmax(118px,1fr)) 14px repeat(${nT}, minmax(118px,1fr))`;
-    const list = [["Mulai", start], ["Jalur A — Turun Berat", turun], ["Jalur B — Bugar & Kuat", kuat], ["Ekstra", ekstra]]
-      .filter(([, a]) => a.length).map(([t, a]) => `<div class="track"><span class="label muted-d">${t}</span>${a.map((m) => node(m, "", "auto", "auto")).join("")}</div>`).join("");
-    return `<div class="map-scroll"><div class="map" id="map" style="grid-template-columns:${cols};grid-template-rows:auto auto auto;row-gap:34px;min-width:${(start.length + nT) * 132}px">${grid}<svg id="mapSvg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible"></svg></div></div><div class="map-list">${list}</div>`;
-  }
-  function drawConnectors(mods) {
-    const map = $("#map"), svg = $("#mapSvg"); if (!map || !svg || !map.offsetParent) return;
-    const box = map.getBoundingClientRect();
-    const R = (id) => { const el = map.querySelector(`[data-id="${id}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { l: r.left - box.left, r: r.right - box.left, t: r.top - box.top, b: r.bottom - box.top, cy: r.top - box.top + r.height / 2, cx: r.left - box.left + r.width / 2 }; };
-    const by = (t) => mods.filter((m) => m.track === t).sort((a, b) => a.sort - b.sort).map((m) => R(m.id)).filter(Boolean);
-    const start = by("start"), turun = by("turun"), kuat = by("kuat"), ekstra = by("ekstra");
-    let p = "";
-    const line = (x1, y1, x2, y2, dash) => (p += `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${dash ? "#d4a93c" : "rgba(212,169,60,.45)"}" stroke-width="1.5" fill="none" ${dash ? 'stroke-dasharray="4 5"' : ""}/>`);
-    for (let i = 1; i < start.length; i++) line(start[i - 1].r, start[i - 1].cy, start[i].l, start[i].cy);
-    [turun, kuat].forEach((row) => { for (let i = 1; i < row.length; i++) line(row[i - 1].r, row[i - 1].cy, row[i].l, row[i].cy); });
-    const last = start[start.length - 1];
-    if (last && (turun[0] || kuat[0])) {
-      const bx = (turun[0] || kuat[0]).l - 16; line(last.r, last.cy, bx, last.cy);
-      const ys = [turun[0], kuat[0]].filter(Boolean).map((n) => n.cy); line(bx, Math.min(...ys, last.cy), bx, Math.max(...ys, last.cy));
-      [turun[0], kuat[0]].filter(Boolean).forEach((n) => line(bx, n.cy, n.l, n.cy));
-    }
-    ekstra.forEach((e) => {
-      if (turun[0]) line(e.cx, e.t, e.cx, Math.max(...turun.map((n) => n.b)), true);
-      if (kuat[0]) line(e.cx, e.b, e.cx, Math.min(...kuat.map((n) => n.t)), true);
-    });
-    svg.innerHTML = p;
+    const step = (m, cls, i) => {
+      const s = stat(m);
+      const mark = s.locked ? "🔒" : s.total && s.d === s.total ? "✓" : i + 1;
+      return `<div class="step${s.total && s.d === s.total ? " done" : ""}"><span class="dot">${mark}</span>${card(m, cls, s)}</div>`;
+    };
+    const trunk = start.map((m, i) => step(m, i === 0 ? "dark" : "", i)).join("");
+    const colA = turun.map((m, i) => step(m, i === 0 ? "dark" : "", i)).join("");
+    const colB = kuat.map((m, i) => step(m, i === 0 ? "dark" : "", i)).join("");
+    const extra = ekstra.map((m, i) => { const s = stat(m); return card(m, i === 0 ? "hot" : "gold", s); }).join("");
+    return `<div class="journey">
+      <div class="jcol">${trunk}</div>
+      ${turun.length || kuat.length ? `<div class="jsplit"><span>bercabang jadi dua jalur</span></div>
+      <div class="jfork">
+        <div class="jcol"><span class="jlabel">Jalur A — Turun Berat</span>${colA}</div>
+        <div class="jcol"><span class="jlabel">Jalur B — Bugar & Kuat</span>${colB}</div>
+      </div>` : ""}
+      ${ekstra.length ? `<div class="jextra"><span class="jlabel">Program tambahan</span><div class="jextra-grid">${extra}</div></div>` : ""}
+    </div>`;
   }
 
   function videoCard(v, locked) {
@@ -680,9 +664,7 @@
         <a class="btn acc" target="_blank" rel="noopener" href="${waLink(S.whatsapp, "Assalamu'alaikum admin " + S.brand + ", saya " + (state.me.full_name || "") + " mau bertanya:")}">Tanya admin via WhatsApp</a></div>
     </section>`;
 
-    drawConnectors(mods);
     Store.logs("weight", 365).then((w) => { const el = $("#dashW"); if (el && w.length) el.textContent = "Berat terakhir: " + num1(w[w.length - 1].value) + " kg" + (w.length > 1 ? " (" + (w[w.length - 1].value - w[0].value > 0 ? "+" : "") + num1(w[w.length - 1].value - w[0].value) + " kg)" : ""); }).catch(() => {});
-    window.onresize = () => drawConnectors(mods);
     $$("#habits input").forEach((c) => (c.onchange = async () => {
       const items = {}; $$("#habits input").forEach((x) => (items[x.dataset.k] = x.checked));
       try { await Store.saveHabits(Store.today(), items); toast(c.checked ? "Alhamdulillah, tercatat ✓" : "Dibatalkan"); } catch (e) { toast(e.message); }

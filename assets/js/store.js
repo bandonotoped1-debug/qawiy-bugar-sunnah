@@ -327,7 +327,7 @@
     async me() { const s = await Supa.session(); if (!s) return null; const r = await sb.from("profiles").select("*").eq("id", s.user.id).maybeSingle(); return must(r) || { id: s.user.id, email: s.user.email, role: "member" }; },
     async updateMe(patch) { const s = await Supa.session(); delete patch.role; delete patch.referred_by; delete patch.coach_id; return must(await sb.from("profiles").update(patch).eq("id", s.user.id).select().single()); },
     async settings() { const r = await sb.from("settings").select("data").eq("id", 1).maybeSingle(); return mergeSettings(r.data && r.data.data); },
-    async saveSettings(data) { must(await sb.from("settings").upsert({ id: 1, data })); },
+    async saveSettings(data) { must(await sb.from("settings").update({ data }).eq("id", 1)); },
     async mySubs() { const s = await Supa.session(); if (!s) return []; return must(await sb.from("subscriptions").select("*").eq("user_id", s.user.id).order("created_at", { ascending: false })); },
     async requestSub(plan) { const s = await Supa.session(); if (!s) throw new Error("Silakan masuk dulu"); return must(await sb.from("subscriptions").insert({ user_id: s.user.id, plan: plan.id, plan_name: plan.name, amount: plan.price, status: "pending" }).select().single()); },
     async modules() { return must(await sb.from("modules").select("*").order("sort")); },
