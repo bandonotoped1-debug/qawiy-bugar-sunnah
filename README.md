@@ -54,6 +54,7 @@ WHO Guidelines on Physical Activity 2020 · Kemenkes RI (G4 G1 L5, Pedoman Gizi 
 1. `supabase/migrations/002_gizi_perangkat_chat.sql` — pengaturan makro, menu tersimpan, data tubuh, kuota AI & chat
 2. `supabase/migrations/003_google_health.sql` — sambungan Google Health
 3. `supabase/migrations/004_pelatih_referral.sql` — role pelatih, pendaftaran pelatih + CV, referral, bagi hasil & komisi, materi pelatih (video + dokumen)
+4. `supabase/migrations/005_artikel_riset_update.sql` — update 2 artikel (puasa & jalan kaki) sesuai riset ilmu produk: panduan waktu olahraga saat puasa (Aspetar) dan penjelasan NEAT
 
 ### Role: Admin, Pelatih, Member
 - **Calon pelatih** mengisi `#/daftar-pelatih` (email, WhatsApp, CV ≤ 5 MB ke bucket privat `cv`). Syarat yang tampil diatur admin di **Admin → Pelatih → Syarat pendaftaran**.

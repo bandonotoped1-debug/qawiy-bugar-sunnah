@@ -46,13 +46,17 @@ window.Health = (function () {
     const t = gender === "akhwat" ? [13, 20, 24, 31] : [5, 13, 17, 24];
     if (bf <= t[0]) return "Lemak esensial"; if (bf <= t[1]) return "Atlet"; if (bf <= t[2]) return "Bugar"; if (bf <= t[3]) return "Rata-rata"; return "Obesitas";
   }
+  // Defisit 500–600 kkal/hari ≈ 0,5 kg/pekan adalah anjuran utama (NHS/NICE
+  // CG189); defisit >1.000 kkal/hari tidak dianjurkan (Harvard/Cleveland
+  // Clinic) — maka opsi "ekstrem" dibatasi ±0,9 kg/pekan (±990 kkal), bukan
+  // 1 kg penuh, dan tidak pernah dijanjikan sebagai laju normal.
   function goals(tdee) {
     const d = (kg) => Math.round((kg * KCAL_PER_KG) / 7);
     return [
       { k: "jaga", t: "Pertahankan berat", kg: 0, kcal: tdee },
       { k: "turun1", t: "Turun ringan", kg: -0.25, kcal: tdee - d(0.25) },
-      { k: "turun2", t: "Turun berat badan", kg: -0.5, kcal: tdee - d(0.5) },
-      { k: "turun3", t: "Turun ekstrem", kg: -1, kcal: tdee - d(1) },
+      { k: "turun2", t: "Turun berat badan (dianjurkan)", kg: -0.5, kcal: tdee - d(0.5) },
+      { k: "turun3", t: "Turun ekstrem (batas maksimal)", kg: -0.9, kcal: tdee - d(0.9) },
       { k: "naik1", t: "Naik ringan", kg: 0.25, kcal: tdee + d(0.25) },
       { k: "naik2", t: "Naik berat badan", kg: 0.5, kcal: tdee + d(0.5) },
       { k: "naik3", t: "Naik cepat", kg: 1, kcal: tdee + d(1) }

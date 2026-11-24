@@ -104,6 +104,9 @@
     { id: "contact", type: "contact", title: "Ke mana hasil analisismu kami kirim?", sub: "Kami simpan hasil tesmu agar bisa langsung dipakai saat mendaftar." }
   ];
 
+  // Rumus & batas aman mengikuti riset ilmu produk QOWIY (Mifflin-St Jeor,
+  // defisit 500–600 kkal NHS/NICE, lantai kalori Harvard Health, protein
+  // berbasis Morton dkk. 2018 — lihat artikel "Latihan Beban & Protein").
   function computeResult(q) {
     const age = +q.age, h = +q.height, w = +q.weight;
     const bmi = w / Math.pow(h / 100, 2);
@@ -112,15 +115,18 @@
     const bmr = 10 * w + 6.25 * h - 5 * age + (q.gender === "akhwat" ? -161 : 5);
     const tdee = bmr * (+q.activity || 1.2);
     const track = q.goal === "turun" || (q.goal !== "kuat" && bmi > 25) ? "turun" : "kuat";
+    const floor = q.gender === "akhwat" ? 1200 : 1500; // lantai kalori — Harvard Health / livestrong.com
     let target = tdee;
-    if (track === "turun") target = Math.max(tdee * 0.8, bmr);
+    if (track === "turun") target = Math.max(tdee - 550, floor); // defisit 500–600 kkal/hari ≈ 0,5 kg/pekan (NHS/NICE CG189) — tidak pernah di bawah lantai
     else if (q.goal === "kuat") target = tdee * 1.07;
     const refW = bmi > 27 ? 25 * Math.pow(h / 100, 2) : w;
-    const protein = Math.round(1.6 * refW);
+    const proteinFactor = track === "kuat" ? 1.8 : 1.6; // 1,6 g/kg umum; 1,8–2,7 g/kg jalur latihan beban (Morton dkk. 2018)
+    const protein = Math.round(proteinFactor * refW);
     const steps = age >= 60 ? "6.000–8.000" : "8.000–10.000";
     const pola = (+q.activity <= 1.375) ? "3x/pekan (full body)" : (+q.activity <= 1.55 ? "4x/pekan (upper–lower)" : "5x/pekan (split)");
-    const medical = q.health === "hamil" || q.health === "kronis";
-    return { bmi: +bmi.toFixed(1), bmiCat, bmr: Math.round(bmr), tdee: Math.round(tdee), target: Math.round(target / 10) * 10, protein, steps, track, pola, medical };
+    // Rujuk ke tenaga kesehatan: kondisi medis/hamil, ATAU IMT di luar rentang aman 15–35
+    const medical = q.health === "hamil" || q.health === "kronis" || bmi < 15 || bmi > 35;
+    return { bmi: +bmi.toFixed(1), bmiCat, bmr: Math.round(bmr), tdee: Math.round(tdee), target: Math.round(target / 10) * 10, protein, proteinFactor, steps, track, pola, medical };
   }
 
   function viewLanding() {
@@ -315,11 +321,12 @@
         <div class="grid g4 mt24">
           <div class="metric"><span class="label muted-d">IMT</span><b>${r.bmi}</b><span class="muted-d" style="font-size:13px">${r.bmiCat} (klasifikasi Kemenkes)</span></div>
           <div class="metric"><span class="label muted-d">Kebutuhan harian</span><b>${r.tdee.toLocaleString("id-ID")} <small>kkal</small></b><span class="muted-d" style="font-size:13px">Perkiraan TDEE</span></div>
-          <div class="metric"><span class="label muted-d">Target makan</span><b>${r.medical ? "—" : r.target.toLocaleString("id-ID")} <small>${r.medical ? "" : "kkal"}</small></b><span class="muted-d" style="font-size:13px">${r.medical ? "Tentukan bersama dokter" : r.track === "turun" ? "Defisit ±20%, tidak di bawah BMR" : q.goal === "kuat" ? "Surplus ringan ±7%" : "Pemeliharaan"}</span></div>
-          <div class="metric"><span class="label muted-d">Protein</span><b>${r.medical ? "—" : r.protein} <small>${r.medical ? "" : "g/hari"}</small></b><span class="muted-d" style="font-size:13px">±1,6 g/kg (Morton dkk., 2018)</span></div>
+          <div class="metric"><span class="label muted-d">Target makan</span><b>${r.medical ? "—" : r.target.toLocaleString("id-ID")} <small>${r.medical ? "" : "kkal"}</small></b><span class="muted-d" style="font-size:13px">${r.medical ? "Tentukan bersama dokter" : r.track === "turun" ? "Defisit ±550 kkal, tak pernah di bawah 1.200/1.500 kkal" : q.goal === "kuat" ? "Surplus ringan ±7%" : "Pemeliharaan"}</span></div>
+          <div class="metric"><span class="label muted-d">Protein</span><b>${r.medical ? "—" : r.protein} <small>${r.medical ? "" : "g/hari"}</small></b><span class="muted-d" style="font-size:13px">±${r.proteinFactor === 1.8 ? "1,8" : "1,6"} g/kg (Morton dkk., 2018)</span></div>
         </div>
+        ${!r.medical && r.track === "turun" ? `<p class="muted-d mt8" style="font-size:13px;margin:10px 0 0">Catatan: penurunan berat yang cepat di 1–2 pekan pertama umumnya cairan tubuh, bukan lemak — lajunya akan melambat ke sekitar 0,5 kg/pekan, dan itu normal.</p>` : ""}
       </div>
-      ${q.health && q.health !== "tidak" ? `<div class="notice mt16"><b>Catatan kesehatan:</b> ${q.health === "cedera" ? "Pilih gerakan berdampak rendah dan hentikan bila nyeri. Sebaiknya konsultasi fisioterapis." : "Konsultasikan target kalori, puasa sunnah, dan intensitas latihan dengan dokter sebelum memulai. Angka di atas hanya perkiraan umum."}</div>` : ""}
+      ${(q.health && q.health !== "tidak") || r.bmi < 15 || r.bmi > 35 ? `<div class="notice mt16"><b>Catatan kesehatan:</b> ${r.bmi < 15 || r.bmi > 35 ? "IMT kamu berada di luar rentang yang bisa dihitung otomatis dengan aman. Target kalori & program latihan sebaiknya ditentukan bersama dokter/ahli gizi." : q.health === "cedera" ? "Pilih gerakan berdampak rendah dan hentikan bila nyeri. Sebaiknya konsultasi fisioterapis." : "Konsultasikan target kalori, puasa sunnah, dan intensitas latihan dengan dokter sebelum memulai. Angka di atas hanya perkiraan umum."}</div>` : ""}
       <div class="grid g2 section">
         <div class="card"><span class="label muted">Rencana harian (contoh)</span>
           ${plan.map(([k, t, d]) => `<div class="habit" style="cursor:default"><span class="box" style="border-color:var(--acc)"></span><div><b>${t}</b><small>${d}</small></div></div>`).join("")}

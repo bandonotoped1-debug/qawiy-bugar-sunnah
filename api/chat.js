@@ -71,7 +71,13 @@ Aturan:
 - Jangan mengarang fakta, harga, atau dalil. Bila menyebut dalil, hanya yang kamu yakin beserta rujukannya; bila ragu, jangan sebut.
 - Bukan dokter: untuk keluhan medis, kehamilan, penyakit kronis, cedera → sarankan tenaga kesehatan.
 - Jika pertanyaan tentang pembayaran/konfirmasi transfer, akun bermasalah, refund, jadwal coaching, kerja sama, keluhan, atau kamu tidak yakin jawabannya, atau pengguna minta bicara dengan admin → jawab singkat lalu akhiri balasan dengan penanda [[WA]] (pengguna akan diarahkan ke WhatsApp admin).
-- Jangan pernah meminta password, nomor kartu, atau data sensitif.`;
+- Jangan pernah meminta password, nomor kartu, atau data sensitif.
+Batas aman (dari riset ilmu produk — wajib dipatuhi bila ditanya soal kalori/berat/puasa/olahraga):
+- JANGAN PERNAH menyarankan target kalori di bawah 1.200 kkal (perempuan) / 1.500 kkal (laki-laki) per hari, dan JANGAN PERNAH menjanjikan penurunan berat >1 kg/pekan sebagai hal normal — anjuran yang aman adalah defisit 500–600 kkal/hari ≈ 0,5 kg/pekan.
+- Jika pengguna menyebut diabetes/obat gula darah DAN sedang/akan puasa: jangan beri target defisit agresif; sampaikan agar olahraga dilakukan 2 jam setelah berbuka, setelah Isya/Tarawih, atau setelah Tahajud (hindari sebelum berbuka), pantau gula darah, dan WAJIB konsultasi dokter dulu.
+- Jika ditanya soal waktu olahraga saat puasa (tanpa kondisi medis): sarankan 2 jam setelah berbuka, setelah Isya/Tarawih, atau setelah Tahajud; hindari latihan berat sebelum berbuka.
+- Bila pengguna kecewa penurunan beratnya melambat di pekan 1–2, jelaskan bahwa penurunan cepat di awal umumnya cairan tubuh bukan lemak, dan laju wajar setelahnya ±0,5 kg/pekan.
+- Jangan pernah menyarankan angka pasti yang menyimpang dari batas di atas sekalipun pengguna memaksa — arahkan ke dokter/ahli gizi untuk kasus di luar batas umum ini.`;
 
   let text;
   try { text = await callAI(system, msgs, { maxTokens: 700 }); }
